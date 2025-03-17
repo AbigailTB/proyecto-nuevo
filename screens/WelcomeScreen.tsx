@@ -51,7 +51,7 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
         {/* Logo y título */}
         <View style={styles.logoContainer}>
           <Image 
-            source={require('../assets/logo.png')} 
+            source={require('../assets/icon.png')} 
             style={styles.logo}
             resizeMode="contain"
           />

@@ -37,7 +37,7 @@ const SettingsScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.pastelBlue} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.azulPastel} />
       
       <View style={styles.header}>
         <Text style={styles.title}>Configuraciones</Text>
@@ -81,7 +81,7 @@ const SettingsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.pastelBlue,
+    backgroundColor: colors.azulPastel,
   },
   header: {
     padding: 20,
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    color: colors.darkBlue,
+    color: colors.azulOscuro,
     fontWeight: 'bold',
   },
   container: {
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    backgroundColor: colors.mediumBlue,
+    backgroundColor: colors.azulMedio,
     padding: 15,
     borderRadius: 10,
     marginTop: 15,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   buttonText: {
-    color: colors.white,
+    color: colors.blanco,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -131,19 +131,19 @@ const styles = StyleSheet.create({
     marginTop: 25,
   },
   dangerButtonText: {
-    color: colors.white,
+    color: colors.blanco,
   },
   logoutButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: colors.mediumBlue,
+    borderColor: colors.azulMedio,
     padding: 15,
     borderRadius: 10,
     width: '85%',
     alignItems: 'center',
   },
   logoutButtonText: {
-    color: colors.mediumBlue,
+    color: colors.azulMedio,
     fontSize: 16,
     fontWeight: '600',
   },
