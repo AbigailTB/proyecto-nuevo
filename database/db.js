@@ -47,3 +47,4 @@ export const setLoggedInUser = async (email) => {
 export const getLoggedInUser = async () => {
   return await AsyncStorage.getItem('loggedInUser');
 };
+ 
