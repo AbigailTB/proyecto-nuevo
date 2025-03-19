@@ -9,8 +9,14 @@ import {
   Alert
 } from 'react-native';
 import { colors } from '../styles';
+import { logoutUser } from '../database/db';
+import { NavigationProp } from '@react-navigation/native';
 
-const SettingsScreen: React.FC = () => {
+type Props = {
+  navigation: NavigationProp<any>;
+};
+
+const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const handleButtonPress = (action: string) => {
     switch (action) {
       case 'changeName':
@@ -30,17 +36,23 @@ const SettingsScreen: React.FC = () => {
         );
         break;
       case 'logout':
-        Alert.alert('Cerrar Sesión', 'Has cerrado sesión');
+        // Implementa la lógica de cierre de sesión
+        logoutUser().then(() => {
+          Alert.alert('Sesión cerrada', 'Has cerrado sesión');
+          navigation.navigate('Login');
+        }).catch(error => {
+          console.error('Error al cerrar sesión:', error);
+        });
         break;
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.pastelBlue} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.azulPastel} />
       
       <View style={styles.header}>
-        <Text style={styles.title}>Configuraciones</Text>
+        <Text style={styles.title}>Configuración</Text>
       </View>
       
       <View style={styles.container}>
@@ -74,6 +86,37 @@ const SettingsScreen: React.FC = () => {
           <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
       </View>
+      
+      {/* Footer de navegación */}
+      <View style={styles.footer}>
+        <TouchableOpacity 
+          style={styles.footerButton} 
+          onPress={() => navigation.navigate('Home')}
+        >
+          <Text style={styles.footerButtonText}>Home</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.footerButton} 
+          onPress={() => navigation.navigate('Schedule')}
+        >
+          <Text style={styles.footerButtonText}>Programar</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={styles.footerButton} 
+          onPress={() => navigation.navigate('Room')}
+        >
+          <Text style={styles.footerButtonText}>Habitación</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.footerButton, styles.activeFooterButton]}
+          onPress={() => navigation.navigate('Settings')}
+        >
+          <Text style={[styles.footerButtonText, styles.activeFooterButtonText]}>Configuración</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -81,7 +124,7 @@ const SettingsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.pastelBlue,
+    backgroundColor: colors.background,
   },
   header: {
     padding: 20,
@@ -91,7 +134,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    color: colors.darkBlue,
+    color: colors.azulOscuro,
     fontWeight: 'bold',
   },
   container: {
@@ -106,7 +149,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    backgroundColor: colors.mediumBlue,
+    backgroundColor: colors.azulMedio,
     padding: 15,
     borderRadius: 10,
     marginTop: 15,
@@ -122,30 +165,53 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   buttonText: {
-    color: colors.white,
+    color: colors.blanco,
     fontSize: 16,
     fontWeight: '600',
   },
   dangerButton: {
-    backgroundColor: '#E74C3C',
+    backgroundColor: colors.rojo,
     marginTop: 25,
   },
   dangerButtonText: {
-    color: colors.white,
+    color: colors.blanco,
   },
   logoutButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: colors.mediumBlue,
+    borderColor: colors.azulMedio,
     padding: 15,
     borderRadius: 10,
     width: '85%',
     alignItems: 'center',
   },
   logoutButtonText: {
-    color: colors.mediumBlue,
+    color: colors.azulMedio,
     fontSize: 16,
     fontWeight: '600',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    paddingVertical: 15,
+    backgroundColor: colors.blanco,
+  },
+  footerButton: {
+    paddingHorizontal: 15,
+  },
+  footerButtonText: {
+    color: colors.azulClaro,
+    fontSize: 14,
+  },
+  activeFooterButton: {
+    borderTopWidth: 2,
+    borderTopColor: colors.azulClaro,
+  },
+  activeFooterButtonText: {
+    color: colors.azulOscuro,
+    fontWeight: 'bold',
   },
 });
 
