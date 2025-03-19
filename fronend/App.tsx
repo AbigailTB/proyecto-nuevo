@@ -1,11 +1,11 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import WelcomeScreen from './screens/WelcomeScreen';
-import LoginScreen from './screens/LoginScreen';
-import HomeScreen from './screens/HomeScreen';
-import ControlScreen from './screens/ControlScreen';
-import SettingsScreen from './screens/SettingsScreen';
+import WelcomeScreen from '../fronend/screens/WelcomeScreen';
+import LoginScreen from '../fronend/screens/LoginScreen';
+import HomeScreen from '../fronend/screens/HomeScreen';
+import ControlScreen from '../fronend/screens/ControlScreen';
+import SettingsScreen from '../fronend/screens/SettingsScreen';
 
 const Stack = createStackNavigator();
 
