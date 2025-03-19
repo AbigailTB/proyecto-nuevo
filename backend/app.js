@@ -2,7 +2,6 @@ require("dotenv").config(); // Cargar variables de entorno
 const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const path = require('path');
 
 const app = express();
@@ -14,8 +13,12 @@ app.use(express.json());
 // Habilitar CORS
 app.use(cors());
 
-//servidor de archivos estáticos desde la caperta 'uploads'
+// Servidor de archivos estáticos desde la carpeta 'uploads'
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Rutas
+const registerRoutes = require("./routes/usuarioRuta");
+app.use("/usuario", registerRoutes);
 
 // Conectar a MongoDB Atlas
 console.log("🔍 URI de conexión:", process.env.MONGODB_URI);
@@ -28,7 +31,11 @@ app.get('/', (req, res) => {
     res.send('Bienvenido a la API');
 });
 
-// Rutas
+// Middleware para manejo de errores
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Algo salió mal en el servidor' });
+});
 
 // Iniciar el servidor
 app.listen(port, () => {
