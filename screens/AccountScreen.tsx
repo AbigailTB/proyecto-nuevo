@@ -125,7 +125,7 @@ const AccountScreen: React.FC<Props> = ({ navigation }) => {
           style={styles.footerButton} 
           onPress={() => navigation.navigate('Room')}
         >
-          <Text style={styles.footerButtonText}>Habitación</Text>
+          <Text style={styles.footerButtonText}>Habitaciónes</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
