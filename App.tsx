@@ -8,16 +8,35 @@ const LoginScreen = require('./screens/LoginScreen').default;
 const HomeScreen = require('./screens/HomeScreen').default;
 const ControlScreen = require('./screens/ControlScreen').default;
 const SettingsScreen = require('./screens/SettingsScreen').default;
+const ScheduleScreen = require('./screens/ScheduleScreen').default;
+const AlarmScreen = require('./screens/AlarmScreen').default;
+const RoomScreen = require('./screens/RoomScreen').default;
+const AccountScreen = require('./screens/AccountScreen').default;
+const EditAccountScreen = require('./screens/EditAccountScreen').default;
+const AddAccountScreen = require('./screens/AddAccountScreen').default;
+const ProductsScreen = require('./screens/ProductsScreen').default;
+const ProductDetailScreen = require('./screens/ProductDetailScreen').default;
 
-// Creamos componentes temporales para las pantallas problemáticas
-// Estos se pueden reemplazar cuando los originales funcionen correctamente
-const ScheduleScreen = () => <React.Fragment />;
-const AlarmScreen = () => <React.Fragment />;
-const RoomScreen = () => <React.Fragment />;
-const AccountScreen = () => <React.Fragment />;
-const EditAccountScreen = () => <React.Fragment />;
 
-const Stack = createStackNavigator();
+
+// Definir los tipos para los parámetros de las rutas
+type RootStackParamList = {
+  Welcome: undefined;
+  Login: undefined;
+  Home: undefined;
+  Control: { deviceId?: number };
+  Settings: undefined;
+  Schedule: undefined;
+  Alarm: undefined;
+  Room: undefined;
+  Account: undefined;
+  EditAccount: undefined;
+  AddAccount: undefined;
+  Products: undefined;
+  ProductDetail: { productId: number };
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
 
 export default function App() {
   return (
@@ -33,6 +52,10 @@ export default function App() {
         <Stack.Screen name="Room" component={RoomScreen} />
         <Stack.Screen name="Account" component={AccountScreen} />
         <Stack.Screen name="EditAccount" component={EditAccountScreen} />
+        <Stack.Screen name="AddAccount" component={AddAccountScreen} />
+        <Stack.Screen name="Products" component={ProductsScreen} />
+<Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+        {/* Aquí puedes añadir la pantalla de detalle del producto cuando la implementes */}
       </Stack.Navigator>
     </NavigationContainer>
   );

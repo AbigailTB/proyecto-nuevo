@@ -27,6 +27,7 @@ type RootStackParamList = {
   Home: undefined;
   Control: { deviceId: number };
   Settings: undefined;
+  Products: undefined;  // Añadir esta línea
 };
 
 type Device = {
@@ -67,6 +68,10 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   
   const navigateToSettings = (): void => {
     navigation.navigate('Settings');
+  };
+
+  const navigateToProducts = (): void => {
+    navigation.navigate('Products');
   };
   
   const getWeatherColor = (): string => {
@@ -142,6 +147,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
+
+        <TouchableOpacity style={styles.quickActionButton}onPress={navigateToProducts}>
+        <View style={styles.actionIcon}>
+        <Text style={styles.actionEmoji}>🛒</Text>
+        </View>
+        <Text style={styles.actionText}>Productos</Text>
+        </TouchableOpacity>
         
         {/* Devices Section */}
         <View style={styles.devicesContainer}>

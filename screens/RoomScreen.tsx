@@ -6,22 +6,87 @@ import {
   StyleSheet, 
   SafeAreaView,
   StatusBar,
-  Image
+  Image,
+  ScrollView
 } from 'react-native';
 import { colors } from '../styles';
 import { NavigationProp } from '@react-navigation/native';
+
 
 type Props = {
   navigation: NavigationProp<any>;
 };
 
+// Tipo para cada persiana
+type Blind = {
+  id: string;
+  name: string;
+  isOpen: boolean;
+  location: string;
+  temperature: number;
+  humidity: number;
+  image: any; // Para almacenar la referencia a la imagen
+};
+
 const RoomScreen: React.FC<Props> = ({ navigation }) => {
-  const [temperature, setTemperature] = useState<number>(19.7);
-  const [humidity, setHumidity] = useState<number>(63);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  // Lista de persianas disponibles con datos individuales de temperatura y humedad
+  const [blinds, setBlinds] = useState<Blind[]>([
+    { 
+      id: '1', 
+      name: 'Persiana Dormitorio', 
+      isOpen: true, 
+      location: 'Dormitorio',
+      temperature: 19.7,
+      humidity: 63,
+      image: require('../assets/persiana-real.jpg')
+    },
+    { 
+      id: '2', 
+      name: 'Persiana Sala', 
+      isOpen: false, 
+      location: 'Sala',
+      temperature: 22.5,
+      humidity: 58,
+      image: require('../assets/persiana-real.jpg')
+    },
+    { 
+      id: '3', 
+      name: 'Persiana Cocina', 
+      isOpen: false, 
+      location: 'Cocina',
+      temperature: 23.8,
+      humidity: 65,
+      image: require('../assets/persiana-real.jpg')
+    },
+    { 
+      id: '4', 
+      name: 'Persiana Estudio', 
+      isOpen: true, 
+      location: 'Estudio',
+      temperature: 20.2,
+      humidity: 60,
+      image: require('../assets/persiana-real.jpg')
+    }
+  ]);
   
-  const toggleBlind = () => {
-    setIsOpen(!isOpen);
+  const [selectedBlind, setSelectedBlind] = useState<Blind | null>(blinds[0]);
+  
+  // Seleccionar una persiana para mostrar sus detalles
+  const selectBlind = (blind: Blind) => {
+    setSelectedBlind(blind);
+  };
+  
+  // Cambiar el estado de una persiana
+  const toggleBlind = (blindId: string) => {
+    setBlinds(blinds.map(blind => 
+      blind.id === blindId 
+        ? { ...blind, isOpen: !blind.isOpen } 
+        : blind
+    ));
+    
+    if (selectedBlind && selectedBlind.id === blindId) {
+      setSelectedBlind({ ...selectedBlind, isOpen: !selectedBlind.isOpen });
+    }
   };
   
   return (
@@ -36,73 +101,104 @@ const RoomScreen: React.FC<Props> = ({ navigation }) => {
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerText}>Habitación</Text>
+        <Text style={styles.headerText}>Mis Persianas</Text>
         <View style={styles.placeholder}></View>
       </View>
       
       {/* Contenido principal */}
-      <View style={styles.content}>
-        {/* Información del clima */}
-        <View style={styles.climateInfo}>
-          <View style={styles.temperatureContainer}>
-            <Text style={styles.temperatureValue}>{temperature}°C</Text>
-            <Text style={styles.temperatureLabel}>temperatura</Text>
-          </View>
-          
-          <View style={styles.humidityContainer}>
-            <Text style={styles.humidityValue}>{humidity}%</Text>
-            <Text style={styles.humidityLabel}>humedad</Text>
-          </View>
-        </View>
-        
-        {/* Visualización de persiana */}
-        <View style={styles.blindsContainer}>
-          <Text style={styles.blindsLabel}>Persianas</Text>
-          <View style={styles.blindsDisplay}>
-            <Image 
-              source={require('../assets/blind-icon.png')} 
-              style={styles.blindsImage}
-              resizeMode="contain"
-            />
-            
-            {/* Controles de persiana */}
-            <View style={styles.blindsControls}>
-              <TouchableOpacity style={styles.controlButton}>
-                <Text style={styles.controlButtonText}>▲</Text>
-              </TouchableOpacity>
+      <ScrollView style={styles.content}>
+        {/* Selección de persianas */}
+        <Text style={styles.sectionTitle}>Selecciona una persiana</Text>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.blindsSelection}
+        >
+          {blinds.map((blind) => (
+            <TouchableOpacity 
+              key={blind.id}
+              style={[
+                styles.blindCard,
+                selectedBlind?.id === blind.id && styles.selectedBlindCard
+              ]}
+              onPress={() => selectBlind(blind)}
+            >
+              <Image 
+                source={blind.image} 
+                style={styles.blindCardImage}
+                resizeMode="cover"
+              />
+              <Text style={styles.blindCardName}>{blind.name}</Text>
               
-              <View style={styles.blindsStatus}>
-                <Text style={styles.blindsStatusText}>
-                  {isOpen ? 'Abierto' : 'Cerrado'}
-                </Text>
+              {/* Información de clima individual para cada persiana */}
+              <View style={styles.blindCardClimateInfo}>
+                <View style={styles.blindCardTemperature}>
+                  <Text style={styles.blindCardTemperatureValue}>{blind.temperature}°C</Text>
+                  <Text style={styles.blindCardClimateLabel}>temperatura</Text>
+                </View>
+                <View style={styles.blindCardHumidity}>
+                  <Text style={styles.blindCardHumidityValue}>{blind.humidity}%</Text>
+                  <Text style={styles.blindCardClimateLabel}>humedad</Text>
+                </View>
               </View>
               
-              <TouchableOpacity style={styles.controlButton}>
-                <Text style={styles.controlButtonText}>▼</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+              <Text style={[
+                styles.blindCardStatus,
+                blind.isOpen ? styles.blindCardStatusOpen : styles.blindCardStatusClosed
+              ]}>
+                {blind.isOpen ? 'Abierta' : 'Cerrada'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
         
-        {/* Botón principal */}
-        <TouchableOpacity 
-          style={[
-            styles.mainButton,
-            isOpen ? styles.closeButton : styles.openButton
-          ]}
-          onPress={toggleBlind}
-        >
-          <View style={styles.buttonStatus}>
-            <View style={[
-              styles.statusIndicator,
-              isOpen ? styles.openIndicator : styles.closedIndicator
-            ]} />
-            <Text style={styles.buttonStatusText}>
-              {isOpen ? 'Abierto' : 'Cerrado'}
+        {/* Visualización de la persiana seleccionada */}
+        {selectedBlind && (
+          <View style={styles.selectedBlindDetails}>
+            <Text style={styles.selectedBlindTitle}>
+              {selectedBlind.name} - {selectedBlind.location}
             </Text>
+            
+            <View style={styles.selectedBlindContent}>
+              <Image 
+                source={selectedBlind.image} 
+                style={styles.selectedBlindImage}
+                resizeMode="cover"
+              />
+              
+              <View style={styles.blindControls}>
+                <TouchableOpacity style={styles.controlButton}>
+                  <Text style={styles.controlButtonText}>▲</Text>
+                </TouchableOpacity>
+                
+                <Text style={styles.blindStatusText}>
+                  {selectedBlind.isOpen ? 'Abierta' : 'Cerrada'}
+                </Text>
+                
+                <TouchableOpacity style={styles.controlButton}>
+                  <Text style={styles.controlButtonText}>▼</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            
+            {/* Botón para cambiar el estado de la persiana */}
+            <TouchableOpacity 
+              style={[
+                styles.actionButton,
+                selectedBlind.isOpen ? styles.closeButton : styles.openButton
+              ]}
+              onPress={() => toggleBlind(selectedBlind.id)}
+            >
+              <View style={styles.actionButtonContent}>
+                <View style={styles.actionButtonIndicator} />
+                <Text style={styles.actionButtonText}>
+                  {selectedBlind.isOpen ? 'Cerrar Persiana' : 'Abrir Persiana'}
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-      </View>
+        )}
+      </ScrollView>
       
       {/* Footer de navegación */}
       <View style={styles.footer}>
@@ -170,94 +266,139 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
   },
-  climateInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  temperatureContainer: {
-    backgroundColor: '#C8FFD4',
-    padding: 15,
-    borderRadius: 10,
-    width: '48%',
-    alignItems: 'center',
-  },
-  temperatureValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  temperatureLabel: {
-    fontSize: 14,
-    color: '#555',
-  },
-  humidityContainer: {
-    backgroundColor: '#E6E6BE',
-    padding: 15,
-    borderRadius: 10,
-    width: '48%',
-    alignItems: 'center',
-  },
-  humidityValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  humidityLabel: {
-    fontSize: 14,
-    color: '#555',
-  },
-  blindsContainer: {
-    marginTop: 20,
-  },
-  blindsLabel: {
+  sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: colors.blanco,
-    marginBottom: 10,
+    marginBottom: 15,
   },
-  blindsDisplay: {
+  blindsSelection: {
+    paddingBottom: 15,
+  },
+  blindCard: {
+    backgroundColor: '#E0E0E0',
+    borderRadius: 12,
+    width: 180,
+    marginRight: 15,
+    padding: 12,
+    overflow: 'hidden',
+  },
+  selectedBlindCard: {
+    backgroundColor: '#B8C6E2',
+    borderWidth: 2,
+    borderColor: colors.azulOscuro,
+  },
+  blindCardImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  blindCardName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.azulOscuro,
+    marginBottom: 8,
+  },
+  blindCardClimateInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  blindCardTemperature: {
+    backgroundColor: '#C8FFD4',
+    padding: 8,
+    borderRadius: 8,
+    width: '48%',
+    alignItems: 'center',
+  },
+  blindCardHumidity: {
+    backgroundColor: '#E6E6BE',
+    padding: 8,
+    borderRadius: 8,
+    width: '48%',
+    alignItems: 'center',
+  },
+  blindCardTemperatureValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  blindCardHumidityValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  blindCardClimateLabel: {
+    fontSize: 12,
+    color: '#555',
+  },
+  blindCardStatus: {
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: 'bold',
+    paddingVertical: 4,
+    borderRadius: 16,
+    backgroundColor: '#DDDDDD',
+  },
+  blindCardStatusOpen: {
+    color: '#4CAF50',
+  },
+  blindCardStatusClosed: {
+    color: '#F44336',
+  },
+  selectedBlindDetails: {
+    marginTop: 25,
+  },
+  selectedBlindTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.blanco,
+    marginBottom: 15,
+  },
+  selectedBlindContent: {
     flexDirection: 'row',
     backgroundColor: '#D3D3D3',
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: 12,
+    padding: 15,
+    alignItems: 'center',
+  },
+  selectedBlindImage: {
+    width: 150,
+    height: 150,
+    borderRadius: 8,
+  },
+  blindControls: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  blindsImage: {
-    width: 100,
-    height: 100,
-  },
-  blindsControls: {
-    alignItems: 'center',
+    paddingLeft: 15,
+    height: 120,
   },
   controlButton: {
     backgroundColor: colors.azulOscuro,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
   },
   controlButtonText: {
     color: colors.blanco,
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
   },
-  blindsStatus: {
-    marginVertical: 10,
-  },
-  blindsStatusText: {
+  blindStatusText: {
     color: colors.azulOscuro,
     fontSize: 16,
     fontWeight: 'bold',
   },
-  mainButton: {
-    marginTop: 30,
+  actionButton: {
+    marginTop: 20,
     padding: 15,
     borderRadius: 30,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   openButton: {
     backgroundColor: '#4CAF50',
@@ -265,23 +406,18 @@ const styles = StyleSheet.create({
   closeButton: {
     backgroundColor: '#F44336',
   },
-  buttonStatus: {
+  actionButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  statusIndicator: {
+  actionButtonIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
+    backgroundColor: colors.blanco,
     marginRight: 8,
   },
-  openIndicator: {
-    backgroundColor: colors.blanco,
-  },
-  closedIndicator: {
-    backgroundColor: colors.blanco,
-  },
-  buttonStatusText: {
+  actionButtonText: {
     color: colors.blanco,
     fontSize: 18,
     fontWeight: 'bold',

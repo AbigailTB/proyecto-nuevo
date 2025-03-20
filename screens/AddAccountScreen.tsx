@@ -26,34 +26,58 @@ type RootStackParamList = {
   AddAccount: undefined;
 };
 
-type EditAccountScreenNavigationProp = StackNavigationProp<RootStackParamList, 'EditAccount'>;
+type AddAccountScreenNavigationProp = StackNavigationProp<RootStackParamList, 'AddAccount'>;
 
 type Props = {
-  navigation: EditAccountScreenNavigationProp;
+  navigation: AddAccountScreenNavigationProp;
 };
 
-const EditAccountScreen: React.FC<Props> = ({ navigation }) => {
+const AddAccountScreen: React.FC<Props> = ({ navigation }) => {
   // Estados para el formulario
-  const [name, setName] = useState('Usuario JADA');
-  const [email, setEmail] = useState('usuario@example.com');
-  const [phone, setPhone] = useState('123-456-7890');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
-  // Función para validar el nombre
-  const validateName = (name: string) => {
-    if (!name || name.trim().length === 0) {
-      setNameError('El nombre no puede estar vacío');
-      return false;
-    } else {
-      setNameError('');
-      return true;
-    }
+  // Función para validar el email
+  const validateEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
   };
 
-  // Función para manejar la actualización de la cuenta
-  const handleUpdateAccount = () => {
-    if (!validateName(name)) {
+  // Función para validar las entradas
+  const validateInputs = () => {
+    let isValid = true;
+
+    // Validar email
+    if (!email || !validateEmail(email)) {
+      setEmailError('Por favor ingresa un correo electrónico válido');
+      isValid = false;
+    } else {
+      setEmailError('');
+    }
+
+    // Validar contraseña
+    if (!password || password.length < 6) {
+      setPasswordError('La contraseña debe tener al menos 6 caracteres');
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      setPasswordError('Las contraseñas no coinciden');
+      isValid = false;
+    } else {
+      setPasswordError('');
+    }
+
+    return isValid;
+  };
+
+  // Función para manejar la creación de cuenta
+  const handleCreateAccount = () => {
+    if (!validateInputs()) {
       return;
     }
 
@@ -65,8 +89,8 @@ const EditAccountScreen: React.FC<Props> = ({ navigation }) => {
       
       // Mostrar alerta de éxito y navegar de vuelta a Settings
       Alert.alert(
-        "Cuenta Actualizada",
-        "Tus datos han sido actualizados correctamente",
+        "Cuenta Añadida",
+        `Se ha añadido correctamente la cuenta para ${name || email}`,
         [
           { text: "OK", onPress: () => navigation.navigate('Settings') }
         ]
@@ -85,37 +109,62 @@ const EditAccountScreen: React.FC<Props> = ({ navigation }) => {
         >
           <Text style={styles.backButtonText}>← Atrás</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Editar Cuenta</Text>
+        <Text style={styles.headerTitle}>Añadir Cuenta</Text>
         <View style={{ width: 50 }} />
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Información Personal</Text>
+          <Text style={styles.sectionTitle}>Información de Cuenta</Text>
           
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Nombre Completo *</Text>
+            <Text style={styles.inputLabel}>Correo Electrónico *</Text>
             <TextInput
-              style={[styles.input, nameError ? styles.inputError : null]}
-              value={name}
-              onChangeText={setName}
-              placeholder="Ingresa tu nombre completo"
-            />
-            {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
-          </View>
-          
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Correo Electrónico</Text>
-            <TextInput
-              style={styles.input}
+              style={[styles.input, emailError ? styles.inputError : null]}
               value={email}
               onChangeText={setEmail}
               placeholder="Ingresa tu correo electrónico"
               keyboardType="email-address"
               autoCapitalize="none"
-              editable={false}
             />
-            <Text style={styles.helperText}>El correo electrónico no se puede editar</Text>
+            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Contraseña *</Text>
+            <TextInput
+              style={[styles.input, passwordError ? styles.inputError : null]}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Crea una contraseña"
+              secureTextEntry
+            />
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Confirmar Contraseña *</Text>
+            <TextInput
+              style={[styles.input, passwordError ? styles.inputError : null]}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Confirma tu contraseña"
+              secureTextEntry
+            />
+            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+          </View>
+        </View>
+        
+        <View style={styles.formSection}>
+          <Text style={styles.sectionTitle}>Información Personal</Text>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Nombre Completo</Text>
+            <TextInput
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+              placeholder="Ingresa tu nombre completo"
+            />
           </View>
           
           <View style={styles.inputGroup}>
@@ -130,37 +179,15 @@ const EditAccountScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
         
-        <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Cambiar Contraseña</Text>
-          
-          <TouchableOpacity 
-            style={styles.changePasswordButton}
-            onPress={() => {
-              Alert.alert(
-                "Cambiar Contraseña",
-                "Se enviará un enlace a tu correo electrónico para cambiar tu contraseña",
-                [
-                  { text: "Cancelar", style: "cancel" },
-                  { text: "Enviar", onPress: () => {
-                    Alert.alert("Enlace Enviado", "Revisa tu correo electrónico para cambiar tu contraseña");
-                  }}
-                ]
-              );
-            }}
-          >
-            <Text style={styles.changePasswordButtonText}>Cambiar Contraseña</Text>
-          </TouchableOpacity>
-        </View>
-        
         <TouchableOpacity 
           style={[styles.submitButton, isSubmitting ? styles.disabledButton : null]}
-          onPress={handleUpdateAccount}
+          onPress={handleCreateAccount}
           disabled={isSubmitting}
         >
           {isSubmitting ? (
             <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text style={styles.submitButtonText}>Guardar Cambios</Text>
+            <Text style={styles.submitButtonText}>Crear Cuenta</Text>
           )}
         </TouchableOpacity>
         
@@ -277,24 +304,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
-  helperText: {
-    color: '#999',
-    fontSize: 12,
-    marginTop: 4,
-    fontStyle: 'italic',
-  },
-  changePasswordButton: {
-    backgroundColor: colors.azulClaro || '#64b5f6',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  changePasswordButtonText: {
-    color: colors.blanco || '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
   submitButton: {
     backgroundColor: colors.azulMedio || '#0277bd',
     borderRadius: 10,
@@ -341,4 +350,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditAccountScreen;
+export default AddAccountScreen;
