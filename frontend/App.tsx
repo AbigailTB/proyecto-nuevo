@@ -21,7 +21,11 @@ import ProductDetailsScreen from './screens/ProductDetailScreen';
 // Importar providers de contexto
 import { AuthProvider } from './database/context/AuthContext';
 import { BlindProvider } from './database/context/BlindContext';
+<<<<<<< HEAD
 import { MQTTProvider } from './database/context/MQTTContext'; // Nuevo provider MQTT
+=======
+import { MQTTProvider } from './database/context/MQTTContext';
+>>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
 
 // Definir los tipos para los parámetros de las rutas
 type RootStackParamList = {
@@ -46,7 +50,11 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function App() {
   return (
     <AuthProvider>
+<<<<<<< HEAD
       <MQTTProvider> {/* Nuevo provider MQTT */}
+=======
+      <MQTTProvider>
+>>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
         <BlindProvider>
           <NavigationContainer>
             <Stack.Navigator
@@ -68,9 +76,15 @@ export default function App() {
               <Stack.Screen name="EditAccount" component={EditAccountScreen} />
               <Stack.Screen name="AddAccount" component={AddAccountScreen} />
               <Stack.Screen name="Products" component={ProductsScreen} />
+<<<<<<< HEAD
               <Stack.Screen 
                 name="ProductDetails" 
                 component={ProductDetailsScreen as React.ComponentType<any>} 
+=======
+              <Stack.Screen
+                name="ProductDetails"
+                component={ProductDetailsScreen as React.ComponentType<any>}
+>>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
               />
             </Stack.Navigator>
           </NavigationContainer>
