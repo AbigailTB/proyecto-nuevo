@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 // Importación de componentes - usando ruta absoluta para evitar problemas
 const WelcomeScreen = require('./screens/WelcomeScreen').default;
 const LoginScreen = require('./screens/LoginScreen').default;
+const RegisterScreen = require('./screens/RegisterScreen').default; // Añadido
 const HomeScreen = require('./screens/HomeScreen').default;
 const ControlScreen = require('./screens/ControlScreen').default;
 const SettingsScreen = require('./screens/SettingsScreen').default;
@@ -23,6 +24,7 @@ const ProductDetailScreen = require('./screens/ProductDetailScreen').default;
 type RootStackParamList = {
   Welcome: undefined;
   Login: undefined;
+  Register: undefined; // Añadido
   Home: undefined;
   Control: { deviceId?: number };
   Settings: undefined;
@@ -44,6 +46,7 @@ export default function App() {
       <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Control" component={ControlScreen} />
         <Stack.Screen name="Settings" component={SettingsScreen} />
@@ -54,8 +57,7 @@ export default function App() {
         <Stack.Screen name="EditAccount" component={EditAccountScreen} />
         <Stack.Screen name="AddAccount" component={AddAccountScreen} />
         <Stack.Screen name="Products" component={ProductsScreen} />
-<Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
-        {/* Aquí puedes añadir la pantalla de detalle del producto cuando la implementes */}
+        <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

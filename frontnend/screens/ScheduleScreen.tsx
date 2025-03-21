@@ -56,38 +56,47 @@ const ScheduleScreen: React.FC<Props> = ({ navigation, route }) => {
     return schedule;
   }, []);
 
-  // Usar useFocusEffect para cargar/actualizar las alarmas cuando la pantalla recibe el foco
-  useFocusEffect(
-    useCallback(() => {
-      // Verificar si hay una nueva alarma o una alarma actualizada desde la pantalla de edición
-      if (route?.params?.savedAlarm) {
-        const newAlarm = {
-          ...route.params.savedAlarm,
-          isActive: route.params.savedAlarm.isActive !== undefined ? 
-            route.params.savedAlarm.isActive : true
-        };
+  // En ScheduleScreen.tsx, modifica la useFocusEffect para que maneje correctamente
+// la edición versus la creación de alarmas
+
+useFocusEffect(
+  useCallback(() => {
+    // Verificar si hay una alarma desde la pantalla de edición/creación
+    if (route?.params?.savedAlarm) {
+      const savedAlarm = route.params.savedAlarm;
+      
+      // Verificar si la alarma ya existe (edición) o es nueva (creación)
+      setAlarms(currentAlarms => {
+        // Buscar si la alarma ya existe por su ID
+        const existingAlarmIndex = currentAlarms.findIndex(
+          alarm => alarm.id === savedAlarm.id
+        );
         
-        // Actualizar el estado de las alarmas
-        setAlarms(currentAlarms => {
-          // Verificar si la alarma ya existe
-          const alarmIndex = currentAlarms.findIndex(alarm => alarm.id === newAlarm.id);
-          
-          if (alarmIndex >= 0) {
-            // Actualizar alarma existente
-            const updatedAlarms = [...currentAlarms];
-            updatedAlarms[alarmIndex] = newAlarm;
-            return updatedAlarms;
-          } else {
-            // Agregar nueva alarma
-            return [...currentAlarms, newAlarm];
-          }
-        });
-        
-        // Limpiar los parámetros de ruta para evitar problemas en futuras navegaciones
-        navigation.setParams({ savedAlarm: undefined });
-      }
-    }, [route?.params?.savedAlarm])
-  );
+        // Si la alarma existe, actualizarla
+        if (existingAlarmIndex !== -1) {
+          const updatedAlarms = [...currentAlarms];
+          updatedAlarms[existingAlarmIndex] = {
+            ...savedAlarm,
+            isActive: savedAlarm.isActive !== undefined 
+              ? savedAlarm.isActive 
+              : currentAlarms[existingAlarmIndex].isActive
+          };
+          return updatedAlarms;
+        } 
+        // Si es una nueva alarma, agregarla
+        else {
+          return [...currentAlarms, {
+            ...savedAlarm,
+            isActive: true // Por defecto, las nuevas alarmas están activas
+          }];
+        }
+      });
+      
+      // Limpiar los parámetros de ruta para evitar problemas
+      navigation.setParams({ savedAlarm: undefined });
+    }
+  }, [route?.params?.savedAlarm])
+);
 
   // Función para eliminar una alarma
   const deleteAlarm = useCallback((id: string) => {

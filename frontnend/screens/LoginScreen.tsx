@@ -81,12 +81,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const navigateToRegister = () => {
-    // Solo si existe la pantalla de registro
-    try {
-      navigation.navigate('Register');
-    } catch (error) {
-      Alert.alert('Información', 'La función de registro aún no está disponible');
-    }
+    navigation.navigate('Register');
   };
 
   return (
