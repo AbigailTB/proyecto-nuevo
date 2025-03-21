@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   View, 
   Text, 
@@ -13,17 +13,8 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { loginUser, setLoggedInUser, getLoggedInUser, initDB } from '../database/db';
-
-// Colores basados en la paleta proporcionada
-const colors = {
-  azulOscuro: '#001B2A',
-  azulMedio: '#1B263B',
-  azulClaro: '#415A77',
-  azulPastel: '#778DA9',
-  blanco: '#E0E1DD',
-  negro: '#000000'
-};
+import { colors } from '../styles';
+import { AuthContext } from '../database/context/AuthContext';
 
 type RootStackParamList = {
   Login: undefined;
@@ -38,23 +29,16 @@ type Props = {
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  // Usar el contexto de autenticación
+  const { login, isLoading, userToken } = useContext(AuthContext);
 
+  // Si ya hay sesión activa, redirigir a Home
   useEffect(() => {
-    const checkLogin = async (): Promise<void> => {
-      try {
-        await initDB();
-        const loggedInUser = await getLoggedInUser();
-        if (loggedInUser) {
-          navigation.replace('Home');
-        }
-      } catch (error) {
-        console.error('Error al verificar sesión:', error);
-      }
-    };
-    
-    checkLogin();
-  }, [navigation]);
+    if (userToken) {
+      navigation.replace('Home');
+    }
+  }, [userToken, navigation]);
 
   const handleLogin = async (): Promise<void> => {
     if (!email || !password) {
@@ -62,31 +46,15 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
     
-    setIsLoading(true);
+    const result = await login(email, password);
     
-    try {
-      const isAuthenticated = await loginUser(email, password);
-      if (isAuthenticated) {
-        await setLoggedInUser(email);
-        navigation.replace('Home');
-      } else {
-        Alert.alert('Error', 'Correo o contraseña incorrectos');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Ocurrió un problema al iniciar sesión');
-      console.error('Error en login:', error);
-    } finally {
-      setIsLoading(false);
+    if (!result.success) {
+      Alert.alert('Error', result.message || 'Correo o contraseña incorrectos');
     }
   };
 
   const navigateToRegister = () => {
-    // Solo si existe la pantalla de registro
-    try {
-      navigation.navigate('Register');
-    } catch (error) {
-      Alert.alert('Información', 'La función de registro aún no está disponible');
-    }
+    navigation.navigate('Register');
   };
 
   return (
@@ -157,6 +125,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  // Los estilos se mantienen igual que en tu archivo original
   safeArea: {
     flex: 1,
     backgroundColor: colors.blanco,

@@ -69,14 +69,15 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
           ]
         );
         break;
-      case 'logout':
-        logoutUser().then(() => {
-          Alert.alert('Sesión cerrada', 'Has cerrado sesión');
-          navigation.navigate('Login');
-        }).catch(error => {
-          console.error('Error al cerrar sesión:', error);
-        });
-        break;
+        case 'logout':
+          logoutUser().then(() => {
+            Alert.alert('Sesión cerrada', 'Has cerrado sesión');
+            navigation.replace('Login'); // Usar replace para prevenir volver atrás
+          }).catch(error => {
+            console.error('Error al cerrar sesión:', error);
+            Alert.alert('Error', 'No se pudo cerrar la sesión');
+          });
+          break;
       case 'helpCenter':
         Alert.alert(
           'Centro de Ayuda',

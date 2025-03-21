@@ -15,14 +15,14 @@ import { NavigationProp } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 
-// Colores basados en la paleta proporcionada
+// Paleta de colores moderna
 const colors = {
-  azulOscuro: '#001B2A',
-  azulMedio: '#1B263B',
-  azulClaro: '#415A77',
-  azulPastel: '#778DA9',
-  blanco: '#E0E1DD',
-  negro: '#000000'
+  azulOscuro: '#0D47A1',     // Azul oscuro más profundo
+  azulMedio: '#1565C0',      // Azul medio más vibrante
+  azulClaro: '#2196F3',      // Azul claro más luminoso
+  azulPastel: '#64B5F6',     // Azul pastel más suave
+  blanco: '#FFFFFF',         // Blanco puro
+  negro: '#121212',          // Negro casi negro
 };
 
 type RootStackParamList = {
@@ -41,7 +41,7 @@ type Product = {
   description: string;
   price: number;
   oldPrice?: number;
-  image: any; // Utiliza require() para imágenes locales
+  image: any;
   category: string;
   rating: number;
   reviewCount: number;
@@ -57,7 +57,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
       description: 'Controla tus dispositivos de manera eficiente y segura.',
       price: 179.99,
       oldPrice: 199.99,
-      image: require('../assets/product1.jpg'), // Reemplaza con la ruta correcta
+      image: require('../assets/product1.jpg'),
       category: 'Domótica',
       rating: 4.8,
       reviewCount: 320
@@ -68,7 +68,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
       description: 'Supervisa tu hogar o negocio desde cualquier parte del mundo.',
       price: 212.49,
       oldPrice: 249.99,
-      image: require('../assets/product2.jpg'), // Reemplaza con la ruta correcta
+      image: require('../assets/product2.jpg'),
       category: 'Seguridad',
       rating: 4.6,
       reviewCount: 250
@@ -79,7 +79,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
       description: 'Optimiza el consumo de energía con tecnología IoT.',
       price: 170.99,
       oldPrice: 179.99,
-      image: require('../assets/product3.jpg'), // Reemplaza con la ruta correcta
+      image: require('../assets/product3.jpg'),
       category: 'Energía',
       rating: 4.7,
       reviewCount: 180
@@ -90,7 +90,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
       description: 'Detecta movimientos con precisión y seguridad.',
       price: 89.99,
       oldPrice: undefined,
-      image: require('../assets/product4.jpg'), // Reemplaza con la ruta correcta
+      image: require('../assets/product4.jpg'),
       category: 'Seguridad',
       rating: 4.5,
       reviewCount: 210
@@ -101,7 +101,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
       description: 'El sistema más avanzado para el control de persianas.',
       price: 299.99,
       oldPrice: 349.99,
-      image: require('../assets/product5.jpg'), // Reemplaza con la ruta correcta
+      image: require('../assets/product5.jpg'),
       category: 'Persianas',
       rating: 4.9,
       reviewCount: 150
@@ -112,7 +112,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
       description: 'Todo lo que necesitas para comenzar con tu hogar inteligente.',
       price: 399.99,
       oldPrice: 449.99,
-      image: require('../assets/product6.jpg'), // Reemplaza con la ruta correcta
+      image: require('../assets/product6.jpg'),
       category: 'Domótica',
       rating: 4.7,
       reviewCount: 178
@@ -151,7 +151,10 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
         
-        <TouchableOpacity style={styles.viewButton}>
+        <TouchableOpacity 
+          style={styles.viewButton}
+          onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
+        >
           <Text style={styles.viewButtonText}>Ver Más</Text>
         </TouchableOpacity>
       </View>
@@ -159,7 +162,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   // Función para renderizar cada producto en modo lista
-const renderListItem = ({ item }: { item: Product }) => (
+  const renderListItem = ({ item }: { item: Product }) => (
     <TouchableOpacity 
       style={styles.listItem}
       onPress={() => navigation.navigate('ProductDetail', { productId: item.id })}
@@ -453,35 +456,35 @@ const styles = StyleSheet.create({
     elevation: 2,
     overflow: 'hidden',
   },
-  listItemImage: {
-    width: '100%',
-    height: 180,
-    backgroundColor: '#f0f0f0',
-  },
-  listItemInfo: {
-    padding: 15,
-  },
-  listItemName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.azulOscuro,
-    marginBottom: 5,
-  },
-  listItemDescription: {
-    fontSize: 14,
-    color: colors.azulClaro,
-    marginBottom: 8,
-  },
-  listItemCategory: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  listItemPriceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-});
-
-export default ProductsScreen;
+    listItemImage: {
+      width: '100%',
+      height: 180,
+      backgroundColor: '#f0f0f0',
+    },
+    listItemInfo: {
+      padding: 15,
+    },
+    listItemName: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      color: colors.azulOscuro,
+      marginBottom: 5,
+    },
+    listItemDescription: {
+      fontSize: 14,
+      color: colors.azulClaro,
+      marginBottom: 8,
+    },
+    listItemCategory: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    listItemPriceContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+  });
+  
+  export default ProductsScreen;

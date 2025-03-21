@@ -12,7 +12,7 @@ import {
 import Slider from '@react-native-community/slider';
 import { NavigationProp } from '@react-navigation/native';
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window'); 
 
 // Colores basados en la paleta proporcionada
 const colors = {
@@ -37,7 +37,28 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
   const [temperatura, setTemperatura] = useState<number>(22.4);
   const [luminosidad, setLuminosidad] = useState<number>(73);
   const animatedValue = useState<Animated.Value>(new Animated.Value(0))[0];
-  
+  // Añadir estado para el WebSocket
+  const [ws, setWs] = useState<WebSocket | null>(null);
+
+  // Conectar al WebSocket del backend
+  useEffect(() => {
+    const websocket = new WebSocket('ws://192.168.1.72:8081'); // Ajusta la IP si el backend corre en otra máquina
+    setWs(websocket);
+
+    websocket.onopen = () => {
+      console.log('Conectado al WebSocket');
+    };
+
+    websocket.onerror = (error) => {
+      console.error('Error en WebSocket:', error);
+    };
+
+    // Limpiar la conexión al desmontar el componente
+    return () => {
+      websocket.close();
+    };
+  }, []);
+
   // Simular actualización de sensores
   useEffect(() => {
     const interval = setInterval(() => {
@@ -65,12 +86,25 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
     inputRange: [0, 1],
     outputRange: [height * 0.28, height * 0.05],
   });
+
+  // Función para enviar mensajes MQTT
+  const enviarMensajeMQTT = (nivel: number): void => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const payload = nivel === 0 ? 'CERRAR' : nivel === 100 ? 'ABRIR' : `NIVEL_${nivel}`;
+      ws.send(JSON.stringify({ topic: 'persianas/comando', payload }));
+      console.log(`Mensaje enviado: ${payload}`);
+    } else {
+      console.warn('WebSocket no está conectado');
+    }
+  };
   
   const togglePersiana = (): void => {
     if (persianaAbierta) {
       setNivelPersiana(0);
+      enviarMensajeMQTT(0); // Enviar mensaje MQTT al cerrar
     } else {
       setNivelPersiana(100);
+      enviarMensajeMQTT(100); // Enviar mensaje MQTT al abrir
     }
   };
   
@@ -129,7 +163,10 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
           maximumValue={100}
           step={1}
           value={nivelPersiana}
-          onValueChange={(value: number) => setNivelPersiana(value)}
+          onValueChange={(value: number) => {
+            setNivelPersiana(value);
+            enviarMensajeMQTT(value); // Enviar mensaje MQTT al ajustar el nivel
+          }}
           minimumTrackTintColor={colors.azulMedio}
           maximumTrackTintColor={colors.azulPastel}
           thumbTintColor={colors.azulClaro}
@@ -194,7 +231,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   window: {
-    width: width * 0.8,
+      width: width * 0.8,
     height: height * 0.28,
     borderWidth: 2,
     borderColor: '#888',
