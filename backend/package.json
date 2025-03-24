@@ -4,16 +4,24 @@
     "description": "",
     "main": "index.js",
     "scripts": {
+<<<<<<< HEAD
         "start": "node app.js"
+=======
+        "test": "echo \"Error: no test specified\" && exit 1"
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
         "dotenv": "^16.4.7",
+<<<<<<< HEAD
         "expo": "^52.0.40",
         "mongoose": "^8.12.2",
         "mqtt": "^5.10.4",
         "socket.io": "^4.8.1"
+=======
+        "mongoose": "^8.12.2"
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
     }
 }

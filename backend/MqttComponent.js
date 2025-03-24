@@ -8,7 +8,11 @@ const MqttComponent = () => {
 
   // Conectar al WebSocket del backend
   useEffect(() => {
+<<<<<<< HEAD
     const websocket = new WebSocket('ws://192.168.33.46:5000');
+=======
+    const websocket = new WebSocket('ws://localhost:8081');
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
     setWs(websocket);
 
     // Escuchar mensajes del backend

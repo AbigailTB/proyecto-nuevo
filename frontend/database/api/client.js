@@ -1,5 +1,6 @@
 import { API_URL } from '@env';
 
+<<<<<<< HEAD
 const API_URL = 'http://192.168.33.46:5000';
 
 const client = {
@@ -49,6 +50,28 @@ const client = {
       console.error('Error en solicitud POST:', error);
       throw error;
     }
+=======
+const client = {
+  async get(endpoint) {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  },
+
+  async post(endpoint, body) {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    return response.json();
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   },
 };
 

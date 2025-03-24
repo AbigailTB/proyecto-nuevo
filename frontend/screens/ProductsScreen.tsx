@@ -1,7 +1,24 @@
 import React, { useEffect, useState } from 'react';
+<<<<<<< HEAD
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, FlatList, Image, TextInput, StatusBar, Dimensions, ActivityIndicator, Alert
 } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
+=======
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  FlatList,
+  Image,
+  TextInput,
+  StatusBar,
+  Dimensions,
+} from 'react-native';
+import { NavigationProp } from '@react-navigation/native';
+import client from '../database/api/client'; // Importa el cliente HTTP
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
 
 const { width } = Dimensions.get('window');
 
@@ -18,7 +35,11 @@ const colors = {
 type RootStackParamList = {
   Home: undefined;
   Products: undefined;
+<<<<<<< HEAD
   ProductDetail: { productId: string };
+=======
+  ProductDetail: { productId: string }; // Cambia a string para _id
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
 };
 
 type Props = {
@@ -27,18 +48,27 @@ type Props = {
 
 type Product = {
   _id: string;
+<<<<<<< HEAD
   title?: string;
   name?: string;
+=======
+  name: string;
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   description: string;
   price: number;
   image: string;
   category?: string;
+<<<<<<< HEAD
   brand?: string;
   rating?: number;
   reviews?: number;
   reviewCount?: number;
   discount?: number;
   features?: string[];
+=======
+  rating?: number;
+  reviewCount?: number;
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
 };
 
 const ProductsScreen: React.FC<Props> = ({ navigation }) => {
@@ -46,6 +76,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -169,6 +200,25 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
     return `${BASE_URL}${fixedPath}`;
   };
 
+=======
+
+  // Obtener productos del backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await client.get('/api/products');
+        setProducts(data);
+      } catch (error) {
+        console.error('Error al obtener productos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   // Función para renderizar cada producto en modo cuadrícula
   const renderGridItem = ({ item }: { item: Product }) => (
     <TouchableOpacity
@@ -177,12 +227,20 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
     >
       <View style={styles.productCard}>
         <Image
+<<<<<<< HEAD
           source={{ uri: getImageUrl(item.image) }}
+=======
+          source={{ uri: item.image }} // Usa uri para imágenes desde URL
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
           style={styles.productImage}
           resizeMode="cover"
         />
         <View style={styles.productInfo}>
+<<<<<<< HEAD
           <Text style={styles.productName}>{item.title || item.name}</Text>
+=======
+          <Text style={styles.productName}>{item.name}</Text>
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
           <Text style={styles.productDescription} numberOfLines={2}>
             {item.description}
           </Text>
@@ -190,12 +248,18 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.categoryContainer}>
             <Text style={styles.categoryText}>{item.category || 'Sin categoría'}</Text>
             <View style={styles.ratingContainer}>
+<<<<<<< HEAD
               <Text style={styles.ratingText}>★ {item.rating || '0'}</Text>
               <Text style={styles.reviewCount}>({item.reviews || item.reviewCount || 0})</Text>
+=======
+              <Text style={styles.ratingText}>★ {item.rating || 'N/A'}</Text>
+              <Text style={styles.reviewCount}>({item.reviewCount || 0})</Text>
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
             </View>
           </View>
 
           <View style={styles.priceContainer}>
+<<<<<<< HEAD
             {item.discount && item.discount > 0 && (
               <Text style={styles.oldPrice}>
                 ${(item.price / (1 - item.discount / 100)).toFixed(2)}
@@ -209,6 +273,13 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
           style={styles.viewButton}
           onPress={() => navigation.navigate('ProductDetail', { productId: item._id })}
         >
+=======
+            <Text style={styles.price}>${item.price}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.viewButton}>
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
           <Text style={styles.viewButtonText}>Ver Más</Text>
         </TouchableOpacity>
       </View>
@@ -222,12 +293,20 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
       onPress={() => navigation.navigate('ProductDetail', { productId: item._id })}
     >
       <Image
+<<<<<<< HEAD
         source={{ uri: getImageUrl(item.image) }}
+=======
+        source={{ uri: item.image }}
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
         style={styles.listItemImage}
         resizeMode="cover"
       />
       <View style={styles.listItemInfo}>
+<<<<<<< HEAD
         <Text style={styles.listItemName}>{item.title || item.name}</Text>
+=======
+        <Text style={styles.listItemName}>{item.name}</Text>
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
         <Text style={styles.listItemDescription} numberOfLines={1}>
           {item.description}
         </Text>
@@ -235,17 +314,25 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.listItemCategory}>
           <Text style={styles.categoryText}>{item.category || 'Sin categoría'}</Text>
           <View style={styles.ratingContainer}>
+<<<<<<< HEAD
             <Text style={styles.ratingText}>★ {item.rating || '0'}</Text>
+=======
+            <Text style={styles.ratingText}>★ {item.rating || 'N/A'}</Text>
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
           </View>
         </View>
 
         <View style={styles.listItemPriceContainer}>
+<<<<<<< HEAD
           {item.discount && item.discount > 0 && (
             <Text style={styles.oldPrice}>
               ${(item.price / (1 - item.discount / 100)).toFixed(2)}
             </Text>
           )}
           <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+=======
+          <Text style={styles.price}>${item.price}</Text>
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
         </View>
       </View>
 
@@ -258,6 +345,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+<<<<<<< HEAD
   // Renderizado de pantalla de carga
   if (loading && !refreshing) {
     return (
@@ -267,6 +355,12 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
           <ActivityIndicator size="large" color={colors.azulClaro} />
           <Text style={styles.loadingText}>Cargando productos...</Text>
         </View>
+=======
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={{ textAlign: 'center', marginTop: 20 }}>Cargando productos...</Text>
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
       </SafeAreaView>
     );
   }
@@ -315,6 +409,7 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
+<<<<<<< HEAD
       {/* Error message */}
       {error && (
         <View style={styles.errorContainer}>
@@ -328,10 +423,16 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
       {/* Product Count */}
       <Text style={styles.productCount}>
         Mostrando {filteredProducts.length} productos
+=======
+      {/* Product Count */}
+      <Text style={styles.productCount}>
+        Mostrando {products.length} productos
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
       </Text>
 
       {/* Products Grid/List */}
       <FlatList
+<<<<<<< HEAD
         data={filteredProducts}
         renderItem={viewMode === 'grid' ? renderGridItem : renderListItem}
         keyExtractor={(item) => item._id.toString()}
@@ -351,6 +452,15 @@ const ProductsScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         }
+=======
+        data={products}
+        renderItem={viewMode === 'grid' ? renderGridItem : renderListItem}
+        keyExtractor={(item) => item._id}
+        numColumns={viewMode === 'grid' ? 2 : 1}
+        key={viewMode}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.productList}
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
       />
     </SafeAreaView>
   );
@@ -361,6 +471,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F7FB',
   },
+<<<<<<< HEAD
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -402,6 +513,8 @@ const styles = StyleSheet.create({
     color: colors.azulOscuro,
     marginBottom: 15,
   },
+=======
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -482,7 +595,10 @@ const styles = StyleSheet.create({
   productList: {
     paddingHorizontal: 10,
     paddingBottom: 20,
+<<<<<<< HEAD
     minHeight: 100,
+=======
+>>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   },
   gridItem: {
     width: '50%',
