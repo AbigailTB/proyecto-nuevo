@@ -16,7 +16,7 @@ import AccountScreen from './screens/AccountScreen';
 import EditAccountScreen from './screens/EditAccountScreen';
 import AddAccountScreen from './screens/AddAccountScreen';
 import ProductsScreen from './screens/ProductsScreen';
-import ProductDetailsScreen from './screens/ProductDetailScreen';
+import ProductDetailScreen from './screens/ProductDetailScreen';
 
 // Importar providers de contexto
 import { AuthProvider } from './database/context/AuthContext';
@@ -43,7 +43,8 @@ type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-export default function App() {
+const App = () => {
+  console.log('Aplicación iniciada'); 
   return (
     <AuthProvider>
       <MQTTProvider>
@@ -70,7 +71,7 @@ export default function App() {
               <Stack.Screen name="Products" component={ProductsScreen} />
               <Stack.Screen 
                 name="ProductDetails" 
-                component={ProductDetailsScreen as React.ComponentType<any>} 
+                component={ProductDetailScreen} 
               />
             </Stack.Navigator>
           </NavigationContainer>
@@ -78,4 +79,6 @@ export default function App() {
       </MQTTProvider>
     </AuthProvider>
   );
-}
+};
+
+export default App;

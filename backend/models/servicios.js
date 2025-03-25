@@ -1,10 +1,20 @@
 const mongoose = require('mongoose');
 
-const servicioSchema = new mongoose.Schema({
-    nombre: { type: String, required: true },
-    descripcion: { type: String },
-    precio: { type: Number, required: true },
-    createdAt: { type: Date, default: Date.now },
+// Definir el esquema para los servicios
+const serviciosSchema = new mongoose.Schema({
+    id: { type: String, required: true, unique: true },
+    titulo: { type: String, required: true },
+    descripcion: { type: String, required: true },
+    listItems: [
+        {
+            titulo: { type: String, required: true },
+            descripcion: { type: String, required: true }
+        }
+    ],
+    imagen: { type: String, required: true }
 });
 
-module.exports = mongoose.model('Servicio', servicioSchema);
+// Crear el modelo
+const Servicios = mongoose.model('servicios', serviciosSchema);
+
+module.exports = Servicios;

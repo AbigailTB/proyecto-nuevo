@@ -1,20 +1,21 @@
 import { API_URL } from '@env';
 
-<<<<<<< HEAD
-const API_URL = 'http://192.168.33.46:5000';
+// URL de API como fallback en caso de que no esté disponible en las variables de entorno
+const API_URL_FALLBACK = 'http://192.168.33.46:5000';
 
 const client = {
   async get(endpoint) {
     try {
-      console.log(`Fetching from: ${API_URL}${endpoint}`);
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const baseUrl = API_URL || API_URL_FALLBACK;
+      console.log(`Fetching from: ${baseUrl}${endpoint}`);
+      
+      const response = await fetch(`${baseUrl}${endpoint}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
       
-
       if (!response.ok) {
         // Maneja errores de respuesta HTTP
         const errorBody = await response.text();
@@ -32,7 +33,8 @@ const client = {
 
   async post(endpoint, body) {
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const baseUrl = API_URL || API_URL_FALLBACK;
+      const response = await fetch(`${baseUrl}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,29 +52,52 @@ const client = {
       console.error('Error en solicitud POST:', error);
       throw error;
     }
-=======
-const client = {
-  async get(endpoint) {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.json();
   },
+  
+  async put(endpoint, body) {
+    try {
+      const baseUrl = API_URL || API_URL_FALLBACK;
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
 
-  async post(endpoint, body) {
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    return response.json();
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorBody}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Error en solicitud PUT:', error);
+      throw error;
+    }
   },
+  
+  async delete(endpoint) {
+    try {
+      const baseUrl = API_URL || API_URL_FALLBACK;
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorBody}`);
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Error en solicitud DELETE:', error);
+      throw error;
+    }
+  }
 };
 
 export default client;

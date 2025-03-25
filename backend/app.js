@@ -1,56 +1,84 @@
-const app = require('./app');
-const http = require('http');
-const socketIo = require('socket.io');
-const mqtt = require('mqtt');
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+require('dotenv').config();
 
-const PORT = process.env.PORT || 5000;
-const server = http.createServer(app);
+const app = express();
 
-// Inicializar WebSockets
-const io = socketIo(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
+// Middleware
+app.use(cors({
+    origin: "http://localhost:3000", // Permitir solicitudes desde el frontend
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"], // Permitir 'Authorization'
+    credentials: true // Permitir envío de cookies y tokens en la petición
+}));
+
+// Servir archivos estáticos
+app.use('/uploads', express.static(__dirname + '/uploads'));
+
+app.use(express.json()); // Necesario para procesar JSON en `req.body`
+app.use(express.urlencoded({ extended: true })); // Para datos de formularios
+
+// Conexión a MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+.then(() => console.log('Conectado a MongoDB'))
+.catch(err => console.error('Error conectando a MongoDB:', err));
+
+// Importar rutas
+const verificarSesionRuta = require('./routes/verify-session');
+const loginRuta = require('./routes/loginRuta');
+const usuarioRuta = require('./routes/usuarioRuta');
+const productosRutas = require('./routes/productosRutas');
+const serviciosRuta = require('./routes/serviciosRuta');
+const contactoRuta = require('./routes/contactoRuta');
+const adminRuta = require('./routes/adminRuta');
+const pedidosRuta = require('./routes/pedidosRuta');
+const carritoRuta = require('./routes/carritoRuta');
+const politicasRuta = require('./routes/politicasRuta');
+const testimoniosRutas = require('./routes/testimoniosRutas');
+
+// Middleware para manejo de errores global
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        mensaje: 'Error interno del servidor',
+        error: process.env.NODE_ENV === 'development' ? err.message : 'Ocurrió un error en el servidor'
+    });
+});
+
+// Usar rutas
+app.use('/verify-session', verificarSesionRuta);
+app.use('/login', loginRuta);
+app.use('/usuarios', usuarioRuta);
+app.use('/productos', productosRutas);
+app.use('/servicios', serviciosRuta);
+app.use('/contacto', contactoRuta);
+app.use('/admin', adminRuta);
+app.use('/pedidos', pedidosRuta);
+app.use('/carrito', carritoRuta);
+app.use('/politicas', politicasRuta);
+app.use('/testimonios', testimoniosRutas);
+
+// Ruta raíz
+app.get('/', (req, res) => {
+    res.send('API funcionando correctamente');
+});
+
+// Crear estructura de carpetas para uploads si no existe
+const fs = require('fs');
+const path = require('path');
+
+const directorios = [
+    './uploads',
+    './uploads/productos',
+    './uploads/servicios'
+];
+
+directorios.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        console.log(`Directorio creado: ${dir}`);
     }
 });
 
-io.on('connection', (socket) => {
-    console.log('Cliente conectado a WebSockets');
-
-    socket.on('mensaje', (data) => {
-        console.log('Mensaje recibido:', data);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('Cliente desconectado');
-    });
-});
-
-// Configurar conexión a MQTT (si usas IoT con MQTT)
-const mqttClient = mqtt.connect('mqtt://broker.hivemq.com'); // Cambia por tu broker MQTT
-
-mqttClient.on('connect', () => {
-    console.log('Conectado a MQTT');
-    mqttClient.subscribe('iot/datos');
-});
-
-mqttClient.on('message', (topic, message) => {
-    console.log(`Mensaje MQTT recibido: ${message.toString()}`);
-    io.emit('datos-iot', message.toString()); // Enviar datos a WebSockets
-});
-
-// Iniciar servidor
-server.listen(PORT, () => {
-    console.log(`
-    ============================================
-    🚀  Servidor ejecutándose en el puerto ${PORT}
-    📅  ${new Date().toLocaleString()}
-    ============================================
-  `);
-});
-
-// Manejo de errores
-server.on('error', (error) => {
-    console.error('Error en el servidor:', error);
-    process.exit(1);
-});
+module.exports = app;

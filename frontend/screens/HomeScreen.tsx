@@ -1,8 +1,4 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
 import { 
   View, 
   Text, 
@@ -10,31 +6,11 @@ import {
   StyleSheet, 
   SafeAreaView, 
   ScrollView, 
-<<<<<<< HEAD
-=======
-=======
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   Dimensions,
   StatusBar,
   Modal,
   TextInput,
-<<<<<<< HEAD
   Alert
-=======
-<<<<<<< HEAD
-  Alert
-=======
-  Alert,
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
 } from 'react-native';
 import { NavigationProp } from '@react-navigation/native';
 
@@ -47,15 +23,7 @@ const colors = {
   azulClaro: '#415A77',
   azulPastel: '#778DA9',
   blanco: '#E0E1DD',
-<<<<<<< HEAD
   negro: '#000000'
-=======
-<<<<<<< HEAD
-  negro: '#000000'
-=======
-  negro: '#000000',
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
 };
 
 type RootStackParamList = {
@@ -85,10 +53,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     { id: 1, name: 'Persiana Sala', status: 'Cerrada', type: 'blind' },
     { id: 2, name: 'Persiana Dormitorio', status: 'Abierta', type: 'blind' },
     { id: 3, name: 'Persiana Cocina', status: 'Cerrada', type: 'blind' },
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
     { id: 4, name: 'Persiana Estudio', status: 'Semi-abierta', type: 'blind' }
   ]);
   
@@ -116,33 +80,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate('Control', { deviceId });
   };
   
-<<<<<<< HEAD
-=======
-=======
-    { id: 4, name: 'Persiana Estudio', status: 'Semi-abierta', type: 'blind' },
-  ]);
-
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [newBlindName, setNewBlindName] = useState<string>('');
-  const [newBlindStatus, setNewBlindStatus] = useState<string>('Cerrada');
-  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
-  const [deviceToDelete, setDeviceToDelete] = useState<number | null>(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTemperature(prev => +(prev + (Math.random() * 0.3 - 0.15)).toFixed(1));
-      setHumidity(prev => Math.min(100, Math.max(30, Math.floor(prev + (Math.random() * 2 - 1)))));
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const navigateToControl = (deviceId: number): void => {
-    navigation.navigate('Control', { deviceId });
-  };
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   const navigateToSettings = (): void => {
     navigation.navigate('Settings');
   };
@@ -158,10 +95,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const navigateToRoom = (): void => {
     navigation.navigate('Room');
   };
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   
   const getWeatherColor = (): string => {
     if (temperature < 18) return '#C8E6FF'; // Frío
@@ -170,43 +103,18 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   // Función para añadir una nueva persiana
-<<<<<<< HEAD
-=======
-=======
-
-  const getWeatherColor = (): string => {
-    if (temperature < 18) return '#C8E6FF';
-    if (temperature > 25) return '#FFD6C8';
-    return '#C8FFD4';
-  };
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   const addNewBlind = (): void => {
     if (newBlindName.trim() === '') {
       Alert.alert('Error', 'Por favor, introduce un nombre para la persiana');
       return;
     }
-<<<<<<< HEAD
     
     // Crear nueva persiana con ID único
-=======
-<<<<<<< HEAD
-    
-    // Crear nueva persiana con ID único
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
     const newId = Math.max(...devices.map(d => d.id), 0) + 1;
     const newBlind: Device = {
       id: newId,
       name: newBlindName,
       status: newBlindStatus,
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
       type: 'blind'
     };
     
@@ -214,38 +122,16 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     setDevices([...devices, newBlind]);
     
     // Reiniciar el formulario y cerrar el modal
-<<<<<<< HEAD
-=======
-=======
-      type: 'blind',
-    };
-
-    setDevices([...devices, newBlind]);
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
     setNewBlindName('');
     setNewBlindStatus('Cerrada');
     setModalVisible(false);
   };
-<<<<<<< HEAD
   
   // Función para mostrar el modal de confirmación de eliminación
-=======
-<<<<<<< HEAD
-  
-  // Función para mostrar el modal de confirmación de eliminación
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   const promptDeleteDevice = (deviceId: number): void => {
     setDeviceToDelete(deviceId);
     setDeleteModalVisible(true);
   };
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   
   // Función para eliminar un dispositivo
   const deleteDevice = (): void => {
@@ -256,17 +142,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     setDevices(updatedDevices);
     
     // Cerrar el modal y resetear el ID del dispositivo a eliminar
-<<<<<<< HEAD
-=======
-=======
-
-  const deleteDevice = (): void => {
-    if (deviceToDelete === null) return;
-
-    const updatedDevices = devices.filter(device => device.id !== deviceToDelete);
-    setDevices(updatedDevices);
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
     setDeleteModalVisible(false);
     setDeviceToDelete(null);
   };
@@ -274,15 +149,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.blanco} />
-<<<<<<< HEAD
       
-=======
-<<<<<<< HEAD
-      
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -295,21 +162,9 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </TouchableOpacity>
       </View>
-<<<<<<< HEAD
       
       <ScrollView 
         style={styles.scrollView} 
-=======
-<<<<<<< HEAD
-      
-      <ScrollView 
-        style={styles.scrollView} 
-=======
-
-      <ScrollView
-        style={styles.scrollView}
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
         showsVerticalScrollIndicator={false}
       >
         {/* Climate Summary Card */}
@@ -324,28 +179,12 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
           </View>
         </View>
-<<<<<<< HEAD
         
-=======
-<<<<<<< HEAD
-        
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
         {/* Quick Actions */}
         <View style={styles.quickActionsContainer}>
           <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
           <View style={styles.quickActions}>
-<<<<<<< HEAD
             <TouchableOpacity 
-=======
-<<<<<<< HEAD
-            <TouchableOpacity 
-=======
-            <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
               style={styles.quickActionButton}
               onPress={navigateToRoom}
             >
@@ -354,33 +193,15 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </View>
               <Text style={styles.actionText}>Persianas</Text>
             </TouchableOpacity>
-<<<<<<< HEAD
             
-=======
-<<<<<<< HEAD
-            
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
             <TouchableOpacity style={styles.quickActionButton}>
               <View style={styles.actionIcon}>
                 <Text style={styles.actionEmoji}>🌡️</Text>
               </View>
               <Text style={styles.actionText}>Temperatura</Text>
             </TouchableOpacity>
-<<<<<<< HEAD
             
             <TouchableOpacity 
-=======
-<<<<<<< HEAD
-            
-            <TouchableOpacity 
-=======
-
-            <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
               style={styles.quickActionButton}
               onPress={navigateToSchedule}
             >
@@ -389,15 +210,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
               </View>
               <Text style={styles.actionText}>Programar</Text>
             </TouchableOpacity>
-<<<<<<< HEAD
             
-=======
-<<<<<<< HEAD
-            
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
             <TouchableOpacity style={styles.quickActionButton}>
               <View style={styles.actionIcon}>
                 <Text style={styles.actionEmoji}>📊</Text>
@@ -407,15 +220,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-<<<<<<< HEAD
         <TouchableOpacity 
-=======
-<<<<<<< HEAD
-        <TouchableOpacity 
-=======
-        <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
           style={styles.quickActionButton}
           onPress={navigateToProducts}
         >
@@ -424,10 +229,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
           <Text style={styles.actionText}>Productos</Text>
         </TouchableOpacity>
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
         
         {/* Devices Section */}
         <View style={styles.devicesContainer}>
@@ -436,19 +237,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           {devices.map(device => (
             <View key={device.id} style={styles.deviceCardContainer}>
               <TouchableOpacity 
-<<<<<<< HEAD
-=======
-=======
-
-        {/* Devices Section */}
-        <View style={styles.devicesContainer}>
-          <Text style={styles.sectionTitle}>Mis Persianas</Text>
-
-          {devices.map(device => (
-            <View key={device.id} style={styles.deviceCardContainer}>
-              <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
                 style={styles.deviceCard}
                 onPress={() => navigateToControl(device.id)}
               >
@@ -461,33 +249,14 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     <Text style={styles.deviceStatus}>{device.status}</Text>
                   </View>
                 </View>
-<<<<<<< HEAD
                 
-=======
-<<<<<<< HEAD
-                
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
                 <View style={styles.deviceActions}>
                   <View style={styles.deviceAction}>
                     <Text style={styles.deviceActionText}>Controlar</Text>
                   </View>
-<<<<<<< HEAD
                   
                   {/* Botón de eliminar rediseñado */}
                   <TouchableOpacity 
-=======
-<<<<<<< HEAD
-                  
-                  {/* Botón de eliminar rediseñado */}
-                  <TouchableOpacity 
-=======
-
-                  <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
                     style={styles.menuButton}
                     onPress={() => promptDeleteDevice(device.id)}
                   >
@@ -498,45 +267,19 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           ))}
         </View>
-<<<<<<< HEAD
         
         {/* Add Device Button */}
         <TouchableOpacity 
-=======
-<<<<<<< HEAD
-        
-        {/* Add Device Button */}
-        <TouchableOpacity 
-=======
-
-        {/* Add Device Button */}
-        <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
           style={styles.addDeviceButton}
           onPress={() => setModalVisible(true)}
         >
           <Text style={styles.addDeviceText}>+ Añadir Persiana</Text>
         </TouchableOpacity>
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
         
         {/* Spacer for bottom padding */}
         <View style={{ height: 20 }} />
       </ScrollView>
       
-<<<<<<< HEAD
-=======
-=======
-
-        {/* Spacer for bottom padding */}
-        <View style={{ height: 20 }} />
-      </ScrollView>
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
       {/* Modal para añadir nueva persiana */}
       <Modal
         animationType="slide"
@@ -547,15 +290,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Añadir Nueva Persiana</Text>
-<<<<<<< HEAD
             
-=======
-<<<<<<< HEAD
-            
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Nombre de la persiana</Text>
               <TextInput
@@ -566,15 +301,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 placeholderTextColor="#999"
               />
             </View>
-<<<<<<< HEAD
             
-=======
-<<<<<<< HEAD
-            
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Estado inicial</Text>
               <View style={styles.statusButtons}>
@@ -583,10 +310,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     key={status}
                     style={[
                       styles.statusButton,
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
                       newBlindStatus === status && styles.statusButtonSelected
                     ]}
                     onPress={() => setNewBlindStatus(status)}
@@ -595,19 +318,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                       style={[
                         styles.statusButtonText,
                         newBlindStatus === status && styles.statusButtonTextSelected
-<<<<<<< HEAD
-=======
-=======
-                      newBlindStatus === status && styles.statusButtonSelected,
-                    ]}
-                    onPress={() => setNewBlindStatus(status)}
-                  >
-                    <Text
-                      style={[
-                        styles.statusButtonText,
-                        newBlindStatus === status && styles.statusButtonTextSelected,
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
                       ]}
                     >
                       {status}
@@ -616,38 +326,16 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 ))}
               </View>
             </View>
-<<<<<<< HEAD
             
             <View style={styles.modalActions}>
               <TouchableOpacity 
-=======
-<<<<<<< HEAD
-            
-            <View style={styles.modalActions}>
-              <TouchableOpacity 
-=======
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
                 style={[styles.modalButton, styles.modalButtonCancel]}
                 onPress={() => setModalVisible(false)}
               >
                 <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
-<<<<<<< HEAD
               
               <TouchableOpacity 
-=======
-<<<<<<< HEAD
-              
-              <TouchableOpacity 
-=======
-
-              <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
                 style={[styles.modalButton, styles.modalButtonConfirm]}
                 onPress={addNewBlind}
               >
@@ -657,15 +345,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-<<<<<<< HEAD
       
-=======
-<<<<<<< HEAD
-      
-=======
-
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
       {/* Modal de confirmación para eliminar */}
       <Modal
         animationType="fade"
@@ -679,38 +359,16 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.deleteConfirmationText}>
               ¿Estás seguro de que deseas eliminar esta persiana?
             </Text>
-<<<<<<< HEAD
             
             <View style={styles.modalActions}>
               <TouchableOpacity 
-=======
-<<<<<<< HEAD
-            
-            <View style={styles.modalActions}>
-              <TouchableOpacity 
-=======
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
                 style={[styles.modalButton, styles.modalButtonCancel]}
                 onPress={() => setDeleteModalVisible(false)}
               >
                 <Text style={styles.modalButtonText}>Cancelar</Text>
               </TouchableOpacity>
-<<<<<<< HEAD
               
               <TouchableOpacity 
-=======
-<<<<<<< HEAD
-              
-              <TouchableOpacity 
-=======
-
-              <TouchableOpacity
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
                 style={[styles.modalButton, styles.modalButtonDelete]}
                 onPress={deleteDevice}
               >
@@ -933,16 +591,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-<<<<<<< HEAD
   
   // Estilos para el modal de añadir persiana
-=======
-<<<<<<< HEAD
-  
-  // Estilos para el modal de añadir persiana
-=======
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -1050,15 +700,7 @@ const styles = StyleSheet.create({
     color: '#555',
     textAlign: 'center',
     marginBottom: 20,
-<<<<<<< HEAD
   }
-=======
-<<<<<<< HEAD
-  }
-=======
-  },
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
 });
 
 export default HomeScreen;

@@ -1,35 +1,51 @@
-const jwt = require('jsonwebtoken');
 const Usuario = require('../models/usuarios');
-const config = require('../config/config');
+const bcrypt = require('bcryptjs');
 
 exports.register = async (req, res) => {
     try {
-        const { nombre, email, password } = req.body;
-        let usuario = await Usuario.findOne({ email });
-        if (usuario) return res.status(400).json({ message: 'El usuario ya existe' });
+        // Verificar si el correo ya existe
+        const existeUsuario = await Usuario.findOne({ email: req.body.email });
+        if (existeUsuario) return res.status(400).json({ message: "El correo ya está registrado" });
 
-        usuario = new Usuario({ nombre, email, password });
-        await usuario.save();
+        // Crear nuevo usuario con rol predeterminado "cliente"
+        const nuevoUsuario = new Usuario({
+            nombre: req.body.nombre,
+            apellido: req.body.apellido,
+            telefono: req.body.telefono,
+            email: req.body.email,
+            password: await bcrypt.hash(req.body.password, 10), // Hashear la contraseña
+            role: 'cliente' // Se asigna automáticamente el rol "cliente"
+        });
 
-        const token = jwt.sign({ id: usuario._id, role: usuario.role }, config.jwtSecret, { expiresIn: '1h' });
-        res.status(201).json({ token });
+        await nuevoUsuario.save();
+        res.status(201).json({ message: "Registro exitoso, ahora puedes iniciar sesión" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Error en el registro", error });
     }
 };
 
 exports.login = async (req, res) => {
+    const { email, password } = req.body;
+
     try {
-        const { email, password } = req.body;
         const usuario = await Usuario.findOne({ email });
-        if (!usuario) return res.status(400).json({ message: 'Credenciales inválidas' });
+        if (!usuario) return res.status(400).json({ message: "Usuario no encontrado" });
 
-        const isMatch = await usuario.matchPassword(password);
-        if (!isMatch) return res.status(400).json({ message: 'Credenciales inválidas' });
+        const esValido = await bcrypt.compare(password, usuario.password);
+        if (!esValido) return res.status(400).json({ message: "Contraseña incorrecta" });
 
-        const token = jwt.sign({ id: usuario._id, role: usuario.role }, config.jwtSecret, { expiresIn: '1h' });
-        res.json({ token });
+        // Guardar sesión
+        req.session.userId = usuario._id;
+        req.session.role = usuario.role;
+
+        // Redirigir según el rol
+        res.json({
+            message: "Login exitoso",
+            role: usuario.role
+        });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Error en el servidor" });
     }
 };
+
+

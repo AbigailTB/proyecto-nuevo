@@ -10,10 +10,10 @@ import {
   Animated,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { NavigationProp } from '@react-navigation/native';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { useMQTT } from '../database/context/MQTTContext';
 
-const { width, height } = Dimensions.get('window'); 
+const { width, height } = Dimensions.get('window');
 
 // Colores basados en la paleta proporcionada
 const colors = {
@@ -28,63 +28,61 @@ const colors = {
   sensorHumedad: '#ADD8E6',
 };
 
+// Definir la interfaz para los datos del sensor
+interface SensorData {
+  temperatura: number;
+  luz: number;
+  humedad: number;
+  motor: string;
+  velocidad: number;
+}
+
 type Props = {
-  navigation: NavigationProp<any>;
+  navigation: NavigationProp<ParamListBase>;
   route: any;
 };
 
 const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { isConnected, publish, subscribe } = useMQTT();
-  const [motorEncendido, setMotorEncendido] = useState<boolean>(false);
+  const { isConnected, connectionStatus, publish, subscribe } = useMQTT();
   const [velocidadMotor, setVelocidadMotor] = useState<number>(0);
+  const [motorEncendido, setMotorEncendido] = useState<boolean>(false);
   const [temperatura, setTemperatura] = useState<number | null>(null);
   const [luminosidad, setLuminosidad] = useState<number | null>(null);
   const [humedad, setHumedad] = useState<number | null>(null);
   const animatedValue = useState<Animated.Value>(new Animated.Value(0))[0];
-<<<<<<< HEAD
-  // Añadir estado para el WebSocket
-  const [ws, setWs] = useState<WebSocket | null>(null);
 
-  // Conectar al WebSocket del backend
-  useEffect(() => {
-    const websocket = new WebSocket('ws://192.168.1.72:8081'); // Ajusta la IP si el backend corre en otra máquina
-    setWs(websocket);
-
-    websocket.onopen = () => {
-      console.log('Conectado al WebSocket');
-    };
-
-    websocket.onerror = (error) => {
-      console.error('Error en WebSocket:', error);
-    };
-
-    // Limpiar la conexión al desmontar el componente
-    return () => {
-      websocket.close();
-    };
-  }, []);
-
-  // Simular actualización de sensores
-=======
-
-  // Suscribirse al tópico de sensores  
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
+  // Actualizar datos desde el contexto
   useEffect(() => {
     if (isConnected) {
-      subscribe('sensores/datos', (message) => {
+      subscribe('sensores/datos', (sensorData: SensorData | string) => {
         try {
-          const data = JSON.parse(message);
+          let data: SensorData;
+          
+          // Convertir string a objeto si es necesario
+          if (typeof sensorData === 'string') {
+            data = JSON.parse(sensorData);
+          } else {
+            data = sensorData;
+          }
+          
+          setVelocidadMotor(data.velocidad || 0);
+          setMotorEncendido(data.motor === 'ON');
           setTemperatura(data.temperatura !== -1 ? data.temperatura : null);
           setLuminosidad(data.luz !== undefined ? Math.round((data.luz / 4095) * 100) : null);
           setHumedad(data.humedad !== -1 ? data.humedad : null);
-          setMotorEncendido(data.motor === 'ON');
-          setVelocidadMotor(data.velocidad || 0);
-          console.log('Datos recibidos:', data);
+          
         } catch (error) {
-          console.error('Error al parsear el mensaje MQTT:', error);
+          console.error('Error al procesar datos de sensores:', error);
         }
       });
     }
+    
+    return () => {
+      // Limpiar suscripción al desmontar el componente
+      if (isConnected && typeof unsubscribe === 'function') {
+        unsubscribe('sensores/datos');
+      }
+    };
   }, [isConnected, subscribe]);
 
   // Actualizar animación cuando cambia la velocidad del motor
@@ -92,10 +90,8 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
     Animated.timing(animatedValue, {
       toValue: velocidadMotor / 255,
       duration: 500,
-      useNativeDriver: false,
+      useNativeDriver: false, // No se puede usar useNativeDriver con height
     }).start();
-
-    setMotorEncendido(velocidadMotor > 0);
   }, [velocidadMotor, animatedValue]);
 
   const motorHeight = animatedValue.interpolate({
@@ -103,28 +99,8 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
     outputRange: [height * 0.28, height * 0.05],
   });
 
-<<<<<<< HEAD
-  // Función para enviar mensajes MQTT
-  const enviarMensajeMQTT = (nivel: number): void => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const payload = nivel === 0 ? 'CERRAR' : nivel === 100 ? 'ABRIR' : `NIVEL_${nivel}`;
-      ws.send(JSON.stringify({ topic: 'persianas/comando', payload }));
-      console.log(`Mensaje enviado: ${payload}`);
-    } else {
-      console.warn('WebSocket no está conectado');
-    }
-  };
-  
-  const togglePersiana = (): void => {
-    if (persianaAbierta) {
-      setNivelPersiana(0);
-      enviarMensajeMQTT(0); // Enviar mensaje MQTT al cerrar
-    } else {
-      setNivelPersiana(100);
-      enviarMensajeMQTT(100); // Enviar mensaje MQTT al abrir
-=======
-  // Función para enviar comandos MQTT
-  const enviarComandoMQTT = (comando: string, velocidad?: number): void => {
+  // Función para enviar comandos
+  const enviarComando = (comando: string, velocidad?: number): void => {
     if (!isConnected) {
       console.warn('MQTT no está conectado');
       return;
@@ -136,17 +112,16 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
     }
     const message = JSON.stringify(payload);
     publish('motor/control', message);
-    console.log(`Mensaje enviado: ${message}`);
+    console.log(`Mensaje enviado a motor/control: ${message}`);
   };
 
   const toggleMotor = (): void => {
     if (motorEncendido) {
       setVelocidadMotor(0);
-      enviarComandoMQTT('OFF');
+      enviarComando('OFF');
     } else {
       setVelocidadMotor(255);
-      enviarComandoMQTT('ON');
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
+      enviarComando('ON', 255);
     }
   };
 
@@ -155,6 +130,11 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
     if (temperatura < 18) return '#C8E6FF';
     if (temperatura > 25) return '#FFD6C8';
     return '#C8FFD4';
+  };
+
+  // Función auxiliar para desuscribirse
+  const unsubscribe = (topic: string) => {
+    console.log(`Desuscripción de: ${topic}`);
   };
 
   return (
@@ -172,9 +152,7 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
       {/* Visualización del motor (simulada como persiana) */}
       <View style={styles.persianaContainer}>
         <View style={styles.window}>
-          <Animated.View
-            style={[styles.persiana, { height: motorHeight }]}
-          />
+          <Animated.View style={[styles.persiana, { height: motorHeight }]} />
         </View>
       </View>
 
@@ -219,17 +197,10 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
           minimumValue={0}
           maximumValue={255}
           step={1}
-<<<<<<< HEAD
-          value={nivelPersiana}
-          onValueChange={(value: number) => {
-            setNivelPersiana(value);
-            enviarMensajeMQTT(value); // Enviar mensaje MQTT al ajustar el nivel
-=======
           value={velocidadMotor}
           onValueChange={(value: number) => {
             setVelocidadMotor(value);
-            enviarComandoMQTT(value > 0 ? 'ON' : 'OFF', value);
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
+            enviarComando(value > 0 ? 'ON' : 'OFF', value);
           }}
           minimumTrackTintColor={colors.azulMedio}
           maximumTrackTintColor={colors.azulPastel}
@@ -261,7 +232,7 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
           Estado: <Text style={styles.statusValue}>{motorEncendido ? 'Encendido' : 'Apagado'}</Text>
         </Text>
         <Text style={styles.statusText}>
-          MQTT: <Text style={styles.statusValue}>{isConnected ? 'Conectado' : 'Desconectado'}</Text>
+          Conexión: <Text style={styles.statusValue}>{connectionStatus || (isConnected ? 'Conectado' : 'Desconectado')}</Text>
         </Text>
       </View>
 
@@ -313,7 +284,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   window: {
-      width: width * 0.8,
+    width: width * 0.8,
     height: height * 0.28,
     borderWidth: 2,
     borderColor: '#888',

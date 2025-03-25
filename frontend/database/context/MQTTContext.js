@@ -1,107 +1,5 @@
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
 // frontend/database/context/MQTTContext.js
-import React, { createContext, useState, useEffect, useCallback } from 'react';
-import mqttClient from '../mqtt/mqttService';
-
-export const MQTTContext = createContext();
-
-export const MQTTProvider = ({ children }) => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
-  const [lastMessage, setLastMessage] = useState(null);
-  const [lastTopic, setLastTopic] = useState(null);
-
-  // Conectar al inicio
-  useEffect(() => {
-    connectMQTT();
-    
-    // Limpiar al desmontar
-    return () => {
-      mqttClient.disconnect().catch(console.error);
-    };
-  }, []);
-
-  const connectMQTT = useCallback(async () => {
-    try {
-      setConnectionStatus('connecting');
-      await mqttClient.connect();
-      setIsConnected(true);
-      setConnectionStatus('connected');
-    } catch (error) {
-      console.error('Error conectando a MQTT:', error);
-      setConnectionStatus('error');
-      setIsConnected(false);
-    }
-  }, []);
-
-  const publishMessage = useCallback(async (topic, message) => {
-    if (!isConnected) {
-      await connectMQTT();
-    }
-    
-    try {
-      return await mqttClient.publish(topic, message);
-    } catch (error) {
-      console.error('Error publicando mensaje MQTT:', error);
-      return false;
-    }
-  }, [isConnected, connectMQTT]);
-
-  const subscribeToTopic = useCallback(async (topic, callback) => {
-    if (!isConnected) {
-      await connectMQTT();
-    }
-    
-    try {
-      const wrappedCallback = (data) => {
-        // Actualizar estado para UI
-        setLastMessage(data);
-        setLastTopic(topic);
-        
-        // Llamar al callback original
-        if (callback) callback(data);
-      };
-      
-      return await mqttClient.subscribe(topic, wrappedCallback);
-    } catch (error) {
-      console.error('Error suscribiéndose a topic MQTT:', error);
-      return false;
-    }
-  }, [isConnected, connectMQTT]);
-
-  const unsubscribeFromTopic = useCallback(async (topic, callback) => {
-    if (!isConnected) return false;
-    
-    try {
-      return await mqttClient.unsubscribe(topic, callback);
-    } catch (error) {
-      console.error('Error cancelando suscripción MQTT:', error);
-      return false;
-    }
-  }, [isConnected]);
-
-  return (
-    <MQTTContext.Provider 
-      value={{
-        isConnected,
-        connectionStatus,
-        lastMessage,
-        lastTopic,
-        connect: connectMQTT,
-        publish: publishMessage,
-        subscribe: subscribeToTopic,
-        unsubscribe: unsubscribeFromTopic,
-        // Acceso directo al cliente para casos avanzados
-        client: mqttClient
-      }}
-    >
-<<<<<<< HEAD
-=======
-=======
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import * as Paho from 'paho-mqtt';
 
 const MQTTContext = createContext();
@@ -109,34 +7,71 @@ const MQTTContext = createContext();
 export const MQTTProvider = ({ children }) => {
   const [client, setClient] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const [messages, setMessages] = useState({});
+  const [lastMessage, setLastMessage] = useState(null);
+  const [lastTopic, setLastTopic] = useState(null);
+  const [sensorData, setSensorData] = useState({
+    temperatura: -1,
+    humedad: -1,
+    luz: undefined,
+    motor: 'OFF',
+    velocidad: 0
+  });
 
   useEffect(() => {
-    const mqttClient = new Paho.Client('192.168.33.46', 1883, 'clientId-' + Math.random().toString(16).substr(2, 8));
+    const clientId = 'clientId-' + Math.random().toString(16).substr(2, 8);
+    const mqttClient = new Paho.Client('192.168.33.46', 1883, clientId);
 
     mqttClient.onConnectionLost = (responseObject) => {
       console.log('Conexión perdida:', responseObject.errorMessage);
       setIsConnected(false);
+      setConnectionStatus('disconnected');
     };
 
     mqttClient.onMessageArrived = (message) => {
+      const topic = message.destinationName;
+      const payload = message.payloadString;
+      
+      // Actualizar mensajes por topic
       setMessages((prevMessages) => ({
         ...prevMessages,
-        [message.destinationName]: message.payloadString,
+        [topic]: payload,
       }));
+      
+      // Actualizar último mensaje recibido
+      setLastMessage(payload);
+      setLastTopic(topic);
+      
+      // Procesar datos de sensores
+      if (topic === 'sensores/datos') {
+        try {
+          const data = JSON.parse(payload);
+          setSensorData(data);
+        } catch (error) {
+          console.error('Error al procesar datos de sensores:', error);
+        }
+      }
     };
 
     const connectClient = () => {
+      setConnectionStatus('connecting');
       mqttClient.connect({
         onSuccess: () => {
           console.log('Conectado al broker MQTT');
           setIsConnected(true);
+          setConnectionStatus('connected');
           setClient(mqttClient);
+          
+          // Suscribirse al tópico de sensores automáticamente
+          mqttClient.subscribe('sensores/datos');
         },
         onFailure: (err) => {
           console.error('Error al conectar al broker MQTT:', err);
           setIsConnected(false);
-          setTimeout(connectClient, 5000); // Reintentar conexión después de 5 segundos
+          setConnectionStatus('error');
+          // Reintentar conexión después de 5 segundos
+          setTimeout(connectClient, 5000);
         },
       });
     };
@@ -144,57 +79,114 @@ export const MQTTProvider = ({ children }) => {
     connectClient();
 
     return () => {
-      if (mqttClient.isConnected()) {
+      if (mqttClient && mqttClient.isConnected()) {
         mqttClient.disconnect();
       }
     };
   }, []);
 
-  const subscribe = (topic, callback) => {
+  const connectMQTT = useCallback(async () => {
+    if (client && !client.isConnected()) {
+      setConnectionStatus('connecting');
+      client.connect({
+        onSuccess: () => {
+          setIsConnected(true);
+          setConnectionStatus('connected');
+          
+          // Reintentar suscripciones
+          client.subscribe('sensores/datos');
+        },
+        onFailure: (err) => {
+          console.error('Error reconectando a MQTT:', err);
+          setConnectionStatus('error');
+          setIsConnected(false);
+        }
+      });
+    }
+  }, [client]);
+
+  const subscribe = useCallback((topic, callback) => {
     if (client && isConnected) {
       client.subscribe(topic);
-      const interval = setInterval(() => {
-        if (messages[topic]) {
-          callback(messages[topic]);
+      console.log(`Suscrito a: ${topic}`);
+      
+      // Si se proporciona un callback, configuramos un listener para este topic
+      if (callback) {
+        // Si es el tópico de sensores, procesa el objeto sensorData
+        if (topic === 'sensores/datos') {
+          callback(sensorData);
+          
+          // Configurar un efecto para reenviar actualizaciones de sensorData
+          const interval = setInterval(() => {
+            callback(sensorData);
+          }, 1000);
+          
+          return () => clearInterval(interval);
+        } else {
+          // Para otros tópicos, procesa los mensajes normales
+          const wrappedCallback = () => {
+            if (messages[topic]) {
+              callback(messages[topic]);
+            }
+          };
+          
+          // Ejecutar callback de inmediato si hay un mensaje
+          if (messages[topic]) {
+            callback(messages[topic]);
+          }
+          
+          // Configurar un intervalo para verificar nuevos mensajes
+          const interval = setInterval(wrappedCallback, 100);
+          return () => clearInterval(interval);
         }
-      }, 100);
-      return () => clearInterval(interval);
+      }
     }
-  };
+  }, [client, isConnected, messages, sensorData]);
 
-  const publish = (topic, message) => {
+  const unsubscribe = useCallback((topic) => {
     if (client && isConnected) {
-      const mqttMessage = new Paho.Message(message);
+      client.unsubscribe(topic);
+      console.log(`Cancelada suscripción a: ${topic}`);
+    }
+  }, [client, isConnected]);
+
+  const publish = useCallback((topic, message) => {
+    if (client && isConnected) {
+      const messageStr = typeof message === 'object' ? JSON.stringify(message) : message;
+      const mqttMessage = new Paho.Message(messageStr);
       mqttMessage.destinationName = topic;
       client.send(mqttMessage);
+      console.log(`Mensaje enviado a ${topic}: ${messageStr}`);
+      return true;
     }
-  };
+    console.warn('No se pudo enviar el mensaje. Cliente no conectado.');
+    return false;
+  }, [client, isConnected]);
 
   return (
-    <MQTTContext.Provider value={{ isConnected, subscribe, publish }}>
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
+    <MQTTContext.Provider
+      value={{
+        isConnected,
+        connectionStatus,
+        lastMessage,
+        lastTopic,
+        sensorData,
+        connect: connectMQTT,
+        publish,
+        subscribe,
+        unsubscribe,
+        client
+      }}
+    >
       {children}
     </MQTTContext.Provider>
   );
 };
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
-// Hook personalizado para usar MQTT en componentes
 export const useMQTT = () => {
-  const context = React.useContext(MQTTContext);
+  const context = useContext(MQTTContext);
   if (!context) {
     throw new Error('useMQTT debe usarse dentro de un MQTTProvider');
   }
   return context;
-<<<<<<< HEAD
 };
-=======
-};
-=======
-export const useMQTT = () => useContext(MQTTContext);
->>>>>>> 46cab1a (V 1.0.5 Pyct Implompleto pero ya con rutas)
->>>>>>> c98c00c59ba8a55931c6b7b3c400f2619be96e49
