@@ -1,199 +1,283 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   SafeAreaView,
   StatusBar,
   Dimensions,
   Animated,
+  Alert
 } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { NavigationProp, RouteProp } from '@react-navigation/native';
 import { useMQTT } from '../database/context/MQTTContext';
+import client from '../database/api/client';
+import { controlStyles, colors } from '../styles';
 
 const { width, height } = Dimensions.get('window');
 
-// Colores basados en la paleta proporcionada
-const colors = {
-  azulOscuro: '#001B2A',
-  azulMedio: '#1B263B',
-  azulClaro: '#415A77',
-  azulPastel: '#778DA9',
-  blanco: '#E0E1DD',
-  negro: '#000000',
-  sensorTemp: '#C8FFD4',
-  sensorLuz: '#E6E6BE',
-  sensorHumedad: '#ADD8E6',
+// Definir tipos de navegación consistentes con App.tsx
+type RootStackParamList = {
+  Control: { deviceId?: number };
+  Schedule: undefined;
+  Automation: undefined;
+  History: undefined;
 };
 
-// Definir la interfaz para los datos del sensor
+// Interfaz para datos de sensores con tipado flexible
 interface SensorData {
-  temperatura: number;
-  luz: number;
-  humedad: number;
-  motor: string;
-  velocidad: number;
+  [key: string]: number | string | null;
+  temperatura?: number | string | null;
+  luz?: number | string | null;
+  humedad?: number | string | null;
+  motor?: string;
+  velocidad?: number | string;
 }
 
+// Interfaz para dispositivos IoT
+interface IoTDevice {
+  _id: string;
+  nombre: string;
+  modelo: string;
+  tipo: 'Controlador' | 'Sensor' | 'Actuador';
+  estado?: 'activo' | 'inactivo';
+  ultimaConexion?: Date;
+}
+
+// Definir props con tipos más específicos
 type Props = {
-  navigation: NavigationProp<ParamListBase>;
-  route: any;
+  navigation: NavigationProp<RootStackParamList, 'Control'>;
+  route: RouteProp<RootStackParamList, 'Control'>;
 };
 
 const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
+  // Estados para control y sensores
+  const [device, setDevice] = useState<IoTDevice | null>(null);
   const { isConnected, connectionStatus, publish, subscribe } = useMQTT();
   const [velocidadMotor, setVelocidadMotor] = useState<number>(0);
   const [motorEncendido, setMotorEncendido] = useState<boolean>(false);
-  const [temperatura, setTemperatura] = useState<number | null>(null);
-  const [luminosidad, setLuminosidad] = useState<number | null>(null);
-  const [humedad, setHumedad] = useState<number | null>(null);
-  const animatedValue = useState<Animated.Value>(new Animated.Value(0))[0];
+  const [sensorData, setSensorData] = useState<SensorData>({});
+  const animatedValue = useState(new Animated.Value(0))[0];
 
-  // Actualizar datos desde el contexto
-  useEffect(() => {
-    if (isConnected) {
-      subscribe('sensores/datos', (sensorData: SensorData | string) => {
-        try {
-          let data: SensorData;
-          
-          // Convertir string a objeto si es necesario
-          if (typeof sensorData === 'string') {
-            data = JSON.parse(sensorData);
-          } else {
-            data = sensorData;
-          }
-          
-          setVelocidadMotor(data.velocidad || 0);
-          setMotorEncendido(data.motor === 'ON');
-          setTemperatura(data.temperatura !== -1 ? data.temperatura : null);
-          setLuminosidad(data.luz !== undefined ? Math.round((data.luz / 4095) * 100) : null);
-          setHumedad(data.humedad !== -1 ? data.humedad : null);
-          
-        } catch (error) {
-          console.error('Error al procesar datos de sensores:', error);
-        }
-      });
+  // Función para parsear valores de sensores de forma segura
+  const parseNumericValue = useCallback((value: any, defaultValue: number | null = null): number | null => {
+    if (value === null || value === undefined) return defaultValue;
+    
+    // Si es un número válido, devolverlo
+    if (typeof value === 'number' && !isNaN(value)) return value;
+    
+    // Si es un string numérico, convertirlo
+    if (typeof value === 'string') {
+      const parsedNum = Number(value);
+      return !isNaN(parsedNum) ? parsedNum : defaultValue;
     }
     
-    return () => {
-      // Limpiar suscripción al desmontar el componente
-      if (isConnected && typeof unsubscribe === 'function') {
-        unsubscribe('sensores/datos');
+    return defaultValue;
+  }, []);
+
+  // Cargar detalles del dispositivo
+  useEffect(() => {
+    const fetchDeviceDetails = async () => {
+      try {
+        const deviceId = route.params?.deviceId;
+        if (!deviceId) {
+          Alert.alert('Error', 'No se proporcionó un ID de dispositivo');
+          return;
+        }
+
+        // Usa el ID numérico para la consulta
+        const deviceData = await client.get(`/devices/${deviceId}`);
+        setDevice(deviceData);
+      } catch (error) {
+        console.error('Error al cargar detalles del dispositivo:', error);
+        Alert.alert('Error', 'No se pudieron cargar los detalles del dispositivo');
       }
     };
-  }, [isConnected, subscribe]);
 
-  // Actualizar animación cuando cambia la velocidad del motor
+    fetchDeviceDetails();
+  }, [route.params?.deviceId]);
+
+  // Suscripción a datos de sensores
+  useEffect(() => {
+    if (isConnected && device) {
+      const topicSensores = `sensores/${device.modelo}/datos`;
+      
+      const handleSensorData = (data: SensorData | string) => {
+        try {
+          // Parsear datos si es un string
+          const sensorPayload = typeof data === 'string' 
+            ? JSON.parse(data) 
+            : data;
+
+          // Actualizar estado de sensores con parsing seguro
+          setSensorData({
+            temperatura: parseNumericValue(sensorPayload.temperatura),
+            luz: parseNumericValue(sensorPayload.luz),
+            humedad: parseNumericValue(sensorPayload.humedad),
+            motor: sensorPayload.motor,
+            velocidad: parseNumericValue(sensorPayload.velocidad)
+          });
+
+          // Actualizar estado del motor
+          setMotorEncendido(sensorPayload.motor === 'ON');
+          
+          // Actualizar velocidad del motor
+          const velocidad = parseNumericValue(sensorPayload.velocidad, 0);
+          if (velocidad !== null) {
+            setVelocidadMotor(velocidad);
+          }
+        } catch (error) {
+          console.error('Error procesando datos de sensores:', error);
+        }
+      };
+
+      // Suscribirse al topic de sensores
+      subscribe(topicSensores, handleSensorData);
+
+      // Cleanup de suscripción
+      return () => {
+        // Implementar método de desuscripción si está disponible
+        if (typeof unsubscribe === 'function') {
+          unsubscribe(topicSensores);
+        }
+      };
+    }
+  }, [isConnected, device, subscribe]);
+
+  // Animación de altura de la persiana
   useEffect(() => {
     Animated.timing(animatedValue, {
       toValue: velocidadMotor / 255,
       duration: 500,
-      useNativeDriver: false, // No se puede usar useNativeDriver con height
+      useNativeDriver: false
     }).start();
   }, [velocidadMotor, animatedValue]);
 
   const motorHeight = animatedValue.interpolate({
     inputRange: [0, 1],
     outputRange: [height * 0.28, height * 0.05],
+    extrapolate: 'clamp'
   });
 
-  // Función para enviar comandos
-  const enviarComando = (comando: string, velocidad?: number): void => {
-    if (!isConnected) {
-      console.warn('MQTT no está conectado');
+  // Enviar comando de control
+  const enviarComando = useCallback((comando: string, velocidad?: number) => {
+    if (!isConnected || !device) {
+      Alert.alert('Error', 'No hay conexión o dispositivo seleccionado');
       return;
     }
 
-    const payload: any = { command: comando };
-    if (velocidad !== undefined) {
-      payload.velocidad = velocidad;
+    const topicControl = `motor/${device.modelo}/control`;
+    const payload = {
+      command: comando,
+      ...(velocidad !== undefined && { velocidad })
+    };
+
+    try {
+      publish(topicControl, JSON.stringify(payload));
+      console.log(`Comando enviado a ${topicControl}:`, payload);
+    } catch (error) {
+      console.error('Error enviando comando:', error);
+      Alert.alert('Error', 'No se pudo enviar el comando');
     }
-    const message = JSON.stringify(payload);
-    publish('motor/control', message);
-    console.log(`Mensaje enviado a motor/control: ${message}`);
+  }, [isConnected, device, publish]);
+
+  // Alternar estado del motor
+  const toggleMotor = () => {
+    const nuevoEstado = !motorEncendido;
+    const velocidad = nuevoEstado ? 255 : 0;
+    
+    enviarComando(nuevoEstado ? 'ON' : 'OFF', velocidad);
+    setMotorEncendido(nuevoEstado);
+    setVelocidadMotor(velocidad);
   };
 
-  const toggleMotor = (): void => {
-    if (motorEncendido) {
-      setVelocidadMotor(0);
-      enviarComando('OFF');
-    } else {
-      setVelocidadMotor(255);
-      enviarComando('ON', 255);
-    }
+  // Color del sensor basado en temperatura
+  const getTemperatureColor = () => {
+    const temp = sensorData.temperatura;
+    if (temp === null || temp === undefined) return colors.sensorTemp;
+    
+    const temperature = Number(temp);
+    if (temperature < 18) return '#C8E6FF'; // Frío
+    if (temperature > 25) return '#FFD6C8'; // Caliente
+    return colors.sensorTemp; // Templado
   };
 
-  const getWeatherColor = (): string => {
-    if (!temperatura) return '#C8FFD4';
-    if (temperatura < 18) return '#C8E6FF';
-    if (temperatura > 25) return '#FFD6C8';
-    return '#C8FFD4';
-  };
-
-  // Función auxiliar para desuscribirse
-  const unsubscribe = (topic: string) => {
-    console.log(`Desuscripción de: ${topic}`);
-  };
+  // Renderizado del componente
+  if (!device) {
+    return (
+      <SafeAreaView style={controlStyles.container}>
+        <Text>Cargando dispositivo...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={controlStyles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.azulOscuro} />
 
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
+      <View style={controlStyles.header}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={{ position: 'absolute', left: 20 }}
+        >
+          <Text style={{ color: colors.blanco, fontSize: 20 }}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerText}>Control del Motor</Text>
+        <Text style={controlStyles.headerText}>{device.nombre}</Text>
       </View>
 
       {/* Visualización del motor (simulada como persiana) */}
-      <View style={styles.persianaContainer}>
-        <View style={styles.window}>
-          <Animated.View style={[styles.persiana, { height: motorHeight }]} />
+      <View style={controlStyles.persianaContainer}>
+        <View style={controlStyles.window}>
+          <Animated.View style={[controlStyles.persiana, { height: motorHeight }]} />
         </View>
       </View>
 
       {/* Panel de sensores */}
-      <View style={styles.sensorsPanel}>
-        <View style={[styles.sensorCard, { backgroundColor: colors.sensorTemp }]}>
-          <Text style={styles.sensorLabel}>Temperatura</Text>
-          <View style={styles.sensorValueContainer}>
-            <Text style={styles.sensorValue}>
-              {temperatura !== null ? `${temperatura}°C` : 'N/A'}
+      <View style={controlStyles.sensorsPanel}>
+        <View style={[controlStyles.sensorCard, { backgroundColor: getTemperatureColor() }]}>
+          <Text style={controlStyles.sensorLabel}>Temperatura</Text>
+          <View style={controlStyles.sensorValueContainer}>
+            <Text style={controlStyles.sensorValue}>
+              {sensorData.temperatura !== null 
+                ? `${Number(sensorData.temperatura).toFixed(1)}°C` 
+                : 'N/A'}
             </Text>
-            <Text style={styles.sensorIcon}>🌡️</Text>
+            <Text style={controlStyles.sensorIcon}>🌡️</Text>
           </View>
         </View>
 
-        <View style={[styles.sensorCard, { backgroundColor: colors.sensorLuz }]}>
-          <Text style={styles.sensorLabel}>Luminosidad</Text>
-          <View style={styles.sensorValueContainer}>
-            <Text style={styles.sensorValue}>
-              {luminosidad !== null ? `${luminosidad}%` : 'N/A'}
+        <View style={[controlStyles.sensorCard, { backgroundColor: colors.sensorLuz }]}>
+          <Text style={controlStyles.sensorLabel}>Luminosidad</Text>
+          <View style={controlStyles.sensorValueContainer}>
+            <Text style={controlStyles.sensorValue}>
+              {sensorData.luz !== null 
+                ? `${Number(sensorData.luz).toFixed(1)}%` 
+                : 'N/A'}
             </Text>
-            <Text style={styles.sensorIcon}>☀️</Text>
+            <Text style={controlStyles.sensorIcon}>☀️</Text>
           </View>
         </View>
 
-        <View style={[styles.sensorCard, { backgroundColor: colors.sensorHumedad }]}>
-          <Text style={styles.sensorLabel}>Humedad</Text>
-          <View style={styles.sensorValueContainer}>
-            <Text style={styles.sensorValue}>
-              {humedad !== null ? `${humedad}%` : 'N/A'}
+        <View style={[controlStyles.sensorCard, { backgroundColor: colors.sensorHumedad }]}>
+          <Text style={controlStyles.sensorLabel}>Humedad</Text>
+          <View style={controlStyles.sensorValueContainer}>
+            <Text style={controlStyles.sensorValue}>
+              {sensorData.humedad !== null 
+                ? `${Number(sensorData.humedad).toFixed(1)}%` 
+                : 'N/A'}
             </Text>
-            <Text style={styles.sensorIcon}>💧</Text>
+            <Text style={controlStyles.sensorIcon}>💧</Text>
           </View>
         </View>
       </View>
 
       {/* Control de la velocidad del motor */}
-      <View style={styles.sliderContainer}>
-        <Text style={styles.sliderLabel}>Velocidad del Motor: {velocidadMotor}</Text>
+      <View style={controlStyles.sliderContainer}>
+        <Text style={controlStyles.sliderLabel}>Velocidad del Motor: {velocidadMotor}</Text>
         <Slider
-          style={styles.slider}
+          style={controlStyles.slider}
           minimumValue={0}
           maximumValue={255}
           step={1}
@@ -211,196 +295,56 @@ const ControlScreen: React.FC<Props> = ({ navigation, route }) => {
 
       {/* Botón de control */}
       <TouchableOpacity
-        style={[styles.button, !isConnected && styles.buttonDisabled]}
+        style={[controlStyles.button, !isConnected && { backgroundColor: '#888' }]}
         onPress={toggleMotor}
         disabled={!isConnected}
       >
-        <Text style={styles.buttonText}>
+        <Text style={controlStyles.buttonText}>
           {motorEncendido ? 'Apagar Motor' : 'Encender Motor'}
         </Text>
       </TouchableOpacity>
 
       {/* Estado */}
-      <View style={styles.statusContainer}>
+      <View style={controlStyles.statusContainer}>
         <View
           style={[
-            styles.statusIndicator,
+            controlStyles.statusIndicator,
             { backgroundColor: isConnected ? (motorEncendido ? '#4CAF50' : '#F44336') : '#888' },
           ]}
         />
-        <Text style={styles.statusText}>
-          Estado: <Text style={styles.statusValue}>{motorEncendido ? 'Encendido' : 'Apagado'}</Text>
+        <Text style={controlStyles.statusText}>
+          Estado: <Text style={controlStyles.statusValue}>{motorEncendido ? 'Encendido' : 'Apagado'}</Text>
         </Text>
-        <Text style={styles.statusText}>
-          Conexión: <Text style={styles.statusValue}>{connectionStatus || (isConnected ? 'Conectado' : 'Desconectado')}</Text>
+        <Text style={controlStyles.statusText}>
+          Conexión: <Text style={controlStyles.statusValue}>
+            {connectionStatus || (isConnected ? 'Conectado' : 'Desconectado')}
+          </Text>
         </Text>
       </View>
 
       {/* Footer/Navigation */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton}>
-          <Text style={styles.footerButtonText}>Programar</Text>
+      <View style={controlStyles.footer}>
+        <TouchableOpacity 
+          style={controlStyles.footerButton}
+          onPress={() => navigation.navigate('Schedule')}
+        >
+          <Text style={controlStyles.footerButtonText}>Programar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Text style={styles.footerButtonText}>Automatizar</Text>
+        <TouchableOpacity 
+          style={controlStyles.footerButton}
+          onPress={() => navigation.navigate('Home')}
+        >
+          <Text style={controlStyles.footerButtonText}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Text style={styles.footerButtonText}>Historial</Text>
+        <TouchableOpacity 
+          style={controlStyles.footerButton}
+          onPress={() => navigation.navigate('Room')}
+        >
+          <Text style={controlStyles.footerButtonText}>Habitación</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F7FB',
-  },
-  header: {
-    backgroundColor: colors.azulOscuro,
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  backButton: {
-    position: 'absolute',
-    left: 20,
-    padding: 10,
-  },
-  backButtonText: {
-    fontSize: 20,
-    color: colors.blanco,
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.blanco,
-  },
-  persianaContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  window: {
-    width: width * 0.8,
-    height: height * 0.28,
-    borderWidth: 2,
-    borderColor: '#888',
-    backgroundColor: '#E1F5FE',
-    position: 'relative',
-    borderRadius: 6,
-    overflow: 'hidden',
-  },
-  persiana: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#B0BEC5',
-    borderBottomWidth: 1,
-    borderBottomColor: '#546E7A',
-  },
-  sensorsPanel: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-    flexWrap: 'wrap',
-  },
-  sensorCard: {
-    width: '31%',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  sensorLabel: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 5,
-  },
-  sensorValueContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sensorValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  sensorIcon: {
-    fontSize: 20,
-  },
-  sliderContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  sliderLabel: {
-    fontSize: 16,
-    color: colors.azulOscuro,
-    marginBottom: 10,
-  },
-  slider: {
-    width: '100%',
-    height: 40,
-  },
-  button: {
-    backgroundColor: colors.azulOscuro,
-    marginHorizontal: 50,
-    paddingVertical: 15,
-    borderRadius: 25,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  buttonDisabled: {
-    backgroundColor: '#888',
-  },
-  buttonText: {
-    color: colors.blanco,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    gap: 15,
-  },
-  statusIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: 8,
-  },
-  statusText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  statusValue: {
-    fontWeight: 'bold',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    paddingVertical: 15,
-    backgroundColor: colors.blanco,
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
-  footerButton: {
-    paddingHorizontal: 20,
-  },
-  footerButtonText: {
-    color: colors.azulClaro,
-    fontSize: 14,
-  },
-});
 
 export default ControlScreen;

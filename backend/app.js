@@ -50,7 +50,7 @@ app.use((err, req, res, next) => {
 app.use('/verify-session', verificarSesionRuta);
 app.use('/login', loginRuta);
 app.use('/usuarios', usuarioRuta);
-app.use('/productos', productosRutas);
+app.use('/products', productosRutas);
 app.use('/servicios', serviciosRuta);
 app.use('/contacto', contactoRuta);
 app.use('/admin', adminRuta);
